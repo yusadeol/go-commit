@@ -1,6 +1,8 @@
 package cli
 
-import "strings"
+import (
+	"strings"
+)
 
 type CommandDispatcher struct {
 	commands map[string]Command
@@ -8,15 +10,14 @@ type CommandDispatcher struct {
 
 type Command interface {
 	GetName() string
-	GetArguments() []*Argument
-	GetOptions() []*Option
+	GetArguments() []Argument
+	GetOptions() []Option
 	Execute(input *CommandInput) (*ExecutionResult, error)
 }
 
 type Argument struct {
 	Name        string
 	Description string
-	Value       string
 	Required    bool
 }
 
@@ -24,16 +25,25 @@ type Option struct {
 	Name        string
 	Flag        string
 	Description string
-	Value       string
 	Default     string
 }
 
 type CommandInput struct {
-	Arguments map[string]*Argument
-	Options   map[string]*Option
+	Arguments map[string]ArgumentInput
+	Options   map[string]OptionInput
 }
 
-func NewCommandInput(arguments map[string]*Argument, options map[string]*Option) *CommandInput {
+type ArgumentInput struct {
+	Value string
+	Meta  Argument
+}
+
+type OptionInput struct {
+	Value string
+	Meta  Option
+}
+
+func NewCommandInput(arguments map[string]ArgumentInput, options map[string]OptionInput) *CommandInput {
 	return &CommandInput{Arguments: arguments, Options: options}
 }
 
@@ -73,36 +83,38 @@ func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*
 		defaultExecutionResult.ExitCode = ExitCommandNotFound
 		return defaultExecutionResult, nil
 	}
-	commandInput, err := c.parseCommandInput(command.GetArguments(), command.GetOptions(), args)
+	commandInput, err := c.parseCommandInput(command.GetArguments(), c.standardizeOptions(command.GetOptions()), args)
 	if err != nil {
 		return nil, err
 	}
 	return command.Execute(commandInput)
 }
 
-func (c *CommandDispatcher) parseCommandInput(commandArguments []*Argument, commandOptions []*Option, args []string) (*CommandInput, error) {
-	c.parseArguments(commandArguments, args)
-	c.parseOptions(commandOptions, args)
-	parsedArguments := make(map[string]*Argument)
-	for _, argument := range commandArguments {
-		parsedArguments[argument.Name] = argument
-	}
-	parsedOptions := make(map[string]*Option)
+func (c *CommandDispatcher) standardizeOptions(commandOptions []Option) map[string]Option {
+	standardizeOptions := map[string]Option{}
 	for _, option := range commandOptions {
-		parsedOptions[option.Name] = option
+		standardizeOptions[option.Name] = option
 	}
-	return NewCommandInput(parsedArguments, parsedOptions), nil
+	return standardizeOptions
 }
 
-func (c *CommandDispatcher) parseArguments(commandArguments []*Argument, args []string) {
+func (c *CommandDispatcher) parseCommandInput(commandArguments []Argument, commandOptions map[string]Option, args []string) (*CommandInput, error) {
+	commandArgumentsInput := c.parseArguments(commandArguments, args)
+	commandOptionsInput := c.parseOptions(commandOptions, args)
+	return NewCommandInput(commandArgumentsInput, commandOptionsInput), nil
+}
+
+func (c *CommandDispatcher) parseArguments(commandArguments []Argument, args []string) map[string]ArgumentInput {
 	argumentsFromArgs := c.getArgumentsFromArgs(args)
+	commandArgumentsInput := map[string]ArgumentInput{}
 	for index, argumentArg := range argumentsFromArgs {
 		if index >= len(commandArguments) {
 			break
 		}
 		argument := commandArguments[index]
-		argument.Value = argumentArg
+		commandArgumentsInput[argument.Name] = ArgumentInput{Value: argumentArg, Meta: argument}
 	}
+	return commandArgumentsInput
 }
 
 func (c *CommandDispatcher) getArgumentsFromArgs(args []string) []string {
@@ -122,20 +134,36 @@ func (c *CommandDispatcher) getArgumentsFromArgs(args []string) []string {
 	return argumentsFromArgs
 }
 
-func (c *CommandDispatcher) parseOptions(commandOptions []*Option, args []string) {
+func (c *CommandDispatcher) parseOptions(commandOptions map[string]Option, args []string) map[string]OptionInput {
+	optionFlagsAndOptionNames := map[string]string{}
+	for _, option := range commandOptions {
+		optionFlagsAndOptionNames[option.Flag] = option.Name
+	}
+	commandOptionsInput := map[string]OptionInput{}
 	optionsFromArgs := c.getOptionsFromArgs(args)
-	for index, optionArg := range optionsFromArgs {
-		option := commandOptions[index]
+	for _, optionArg := range optionsFromArgs {
 		parts := strings.SplitN(optionArg, "=", 2)
 		if len(parts) != 2 {
 			continue
 		}
 		optionName := strings.TrimLeft(parts[0], "-")
-		optionValue := parts[1]
-		if option.Name == optionName || option.Flag == optionName {
-			option.Value = optionValue
+		if len(optionName) == 1 {
+			mappedName, nameExists := optionFlagsAndOptionNames[optionName]
+			if !nameExists {
+				continue
+			}
+			optionName = mappedName
+		}
+		option, optionExists := commandOptions[optionName]
+		if !optionExists {
+			continue
+		}
+		commandOptionsInput[optionName] = OptionInput{
+			Value: parts[1],
+			Meta:  option,
 		}
 	}
+	return commandOptionsInput
 }
 
 func (c *CommandDispatcher) getOptionsFromArgs(args []string) []string {
