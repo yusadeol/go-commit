@@ -15,7 +15,7 @@ func newMockCommand() *mockCommand {
 
 func (m *mockCommand) GetArguments() []Argument {
 	return []Argument{
-		{Name: "first", Description: "My first argument", Required: false},
+		{Name: "first", Description: "My first argument", Required: true},
 	}
 }
 
@@ -35,44 +35,90 @@ func (m *mockCommand) GetName() string {
 	return "mock"
 }
 
-func TestNewCommandDispatcher(t *testing.T) {
-	t.Run("should be able to dispatch a command", func(t *testing.T) {
-		args := []string{
-			"argumentValue",
-			"--first",
-			"optionValue",
-		}
+func TestCommandDispatcher(t *testing.T) {
+	t.Run("dispatches a command with required argument and option", func(t *testing.T) {
+		args := []string{"argumentValue", "--first", "optionValue"}
 		command := newMockCommand()
 		dispatcher := NewCommandDispatcher()
 		dispatcher.Register(command)
 		output, err := dispatcher.Dispatch("mock", args)
 		if err != nil {
-			t.Fatalf("Dispatch returned an error: %v", err)
+			t.Fatalf("unexpected error: %v", err)
 		}
 		if output.ExitCode != ExitSuccess {
-			t.Fatalf("Expected ExitSuccess, got: %v", output.ExitCode)
+			t.Fatalf("expected ExitSuccess, got: %v", output.ExitCode)
 		}
 		if !command.executed {
-			t.Fatal("Expected command to be executed")
+			t.Fatal("expected command to be executed")
 		}
-		argument, argumentExists := command.input.Arguments["first"]
-		if !argumentExists || argument.Value != "argumentValue" {
-			t.Errorf("Expected argument 'first' to be 'argumentValue', got: %+v", argument)
+		argumentFirst := command.input.Arguments["first"]
+		if argumentFirst.Value != "argumentValue" {
+			t.Errorf("expected argument 'first' to be 'argumentValue', got: %s", argumentFirst.Value)
 		}
-		option, optionExists := command.input.Options["first"]
-		if !optionExists || option.Value != "optionValue" {
-			t.Errorf("Expected option 'first' to be 'optionValue', got: %+v", option)
+		optionFirst := command.input.Options["first"]
+		if optionFirst.Value != "optionValue" {
+			t.Errorf("expected option 'first' to be 'optionValue', got: %s", optionFirst.Value)
 		}
 	})
 
-	t.Run("should return command not found", func(t *testing.T) {
+	t.Run("returns error when required argument is missing", func(t *testing.T) {
+		args := []string{"--first", "optionValue"}
+		command := newMockCommand()
+		dispatcher := NewCommandDispatcher()
+		dispatcher.Register(command)
+		output, err := dispatcher.Dispatch("mock", args)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if output.ExitCode != ExitInvalidUsage {
+			t.Fatalf("expected ExitInvalidUsage, got: %v", output.ExitCode)
+		}
+		expectedMsg := "Missing required argument(s): [first]"
+		if output.Message != expectedMsg {
+			t.Errorf("expected message %q, got: %q", expectedMsg, output.Message)
+		}
+	})
+
+	t.Run("returns error when command is not found", func(t *testing.T) {
 		dispatcher := NewCommandDispatcher()
 		output, err := dispatcher.Dispatch("notfound", []string{})
 		if err != nil {
-			t.Fatalf("Unexpected error: %v", err)
+			t.Fatalf("unexpected error: %v", err)
 		}
 		if output.ExitCode != ExitCommandNotFound {
-			t.Fatalf("Expected ExitCommandNotFound, got: %v", output.ExitCode)
+			t.Fatalf("expected ExitCommandNotFound, got: %v", output.ExitCode)
+		}
+	})
+
+	t.Run("uses default option value when option is omitted", func(t *testing.T) {
+		args := []string{"argumentValue"}
+		command := newMockCommand()
+		dispatcher := NewCommandDispatcher()
+		dispatcher.Register(command)
+		output, err := dispatcher.Dispatch("mock", args)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if output.ExitCode != ExitSuccess {
+			t.Fatalf("expected ExitSuccess, got: %v", output.ExitCode)
+		}
+		opt := command.input.Options["first"]
+		if opt.Value != "default-value" {
+			t.Errorf("expected option to use default value 'default-value', got: %s", opt.Value)
+		}
+	})
+
+	t.Run("returns error on unknown flag", func(t *testing.T) {
+		args := []string{"argumentValue", "--unknown", "oops"}
+		command := newMockCommand()
+		dispatcher := NewCommandDispatcher()
+		dispatcher.Register(command)
+		output, err := dispatcher.Dispatch("mock", args)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if output.ExitCode != ExitInvalidUsage {
+			t.Fatalf("expected ExitInvalidUsage, got: %v", output.ExitCode)
 		}
 	})
 }

@@ -1,11 +1,14 @@
 package cli
 
 import (
+	"fmt"
 	"strings"
 )
 
 type CommandDispatcher struct {
-	commands map[string]Command
+	commands                 map[string]Command
+	missingRequiredArguments []string
+	unknownOptions           []string
 }
 
 type Command interface {
@@ -84,6 +87,16 @@ func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*
 		return defaultExecutionResult, nil
 	}
 	commandInput, err := c.parseCommandInput(command.GetArguments(), c.standardizeOptions(command.GetOptions()), args)
+	if len(c.missingRequiredArguments) > 0 {
+		defaultExecutionResult.ExitCode = ExitInvalidUsage
+		defaultExecutionResult.Message = fmt.Sprintf("Missing required argument(s): %v", c.missingRequiredArguments)
+		return defaultExecutionResult, nil
+	}
+	if len(c.unknownOptions) > 0 {
+		defaultExecutionResult.ExitCode = ExitInvalidUsage
+		defaultExecutionResult.Message = fmt.Sprintf("Unknown option(s): %v", c.unknownOptions)
+		return defaultExecutionResult, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -99,22 +112,31 @@ func (c *CommandDispatcher) standardizeOptions(commandOptions []Option) map[stri
 }
 
 func (c *CommandDispatcher) parseCommandInput(commandArguments []Argument, commandOptions map[string]Option, args []string) (*CommandInput, error) {
-	commandArgumentsInput := c.parseArguments(commandArguments, args)
-	commandOptionsInput := c.parseOptions(commandOptions, args)
+	commandArgumentsInput, err := c.parseArguments(commandArguments, args)
+	if err != nil {
+		return nil, err
+	}
+	commandOptionsInput, err := c.parseOptions(commandOptions, args)
+	if err != nil {
+		return nil, err
+	}
 	return NewCommandInput(commandArgumentsInput, commandOptionsInput), nil
 }
 
-func (c *CommandDispatcher) parseArguments(commandArguments []Argument, args []string) map[string]ArgumentInput {
+func (c *CommandDispatcher) parseArguments(commandArguments []Argument, args []string) (map[string]ArgumentInput, error) {
 	argumentsFromArgs := c.getArgumentsFromArgs(args)
 	commandArgumentsInput := map[string]ArgumentInput{}
-	for index, argumentArg := range argumentsFromArgs {
-		if index >= len(commandArguments) {
-			break
+	for index, argument := range commandArguments {
+		if index < len(argumentsFromArgs) {
+			value := argumentsFromArgs[index]
+			commandArgumentsInput[argument.Name] = ArgumentInput{Value: value, Meta: argument}
+			continue
 		}
-		argument := commandArguments[index]
-		commandArgumentsInput[argument.Name] = ArgumentInput{Value: argumentArg, Meta: argument}
+		if argument.Required {
+			c.missingRequiredArguments = append(c.missingRequiredArguments, argument.Name)
+		}
 	}
-	return commandArgumentsInput
+	return commandArgumentsInput, nil
 }
 
 func (c *CommandDispatcher) getArgumentsFromArgs(args []string) []string {
@@ -134,36 +156,37 @@ func (c *CommandDispatcher) getArgumentsFromArgs(args []string) []string {
 	return argumentsFromArgs
 }
 
-func (c *CommandDispatcher) parseOptions(commandOptions map[string]Option, args []string) map[string]OptionInput {
-	optionFlagsAndOptionNames := map[string]string{}
-	for _, option := range commandOptions {
-		optionFlagsAndOptionNames[option.Flag] = option.Name
-	}
-	commandOptionsInput := map[string]OptionInput{}
+func (c *CommandDispatcher) parseOptions(commandOptions map[string]Option, args []string) (map[string]OptionInput, error) {
 	optionsFromArgs := c.getOptionsFromArgs(args)
-	for _, optionArg := range optionsFromArgs {
-		parts := strings.SplitN(optionArg, "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		optionName := strings.TrimLeft(parts[0], "-")
-		if len(optionName) == 1 {
-			mappedName, nameExists := optionFlagsAndOptionNames[optionName]
-			if !nameExists {
+	standardizedOptionsFromArgs := c.standardizeOptionsFromArgs(optionsFromArgs)
+	commandOptionsInput := map[string]OptionInput{}
+	recognizedOptions := map[string]bool{}
+	for _, option := range commandOptions {
+		standardizedOptionValue, standardizedOptionExists := standardizedOptionsFromArgs[option.Name]
+		matchedOptionIdentifier := option.Name
+		if !standardizedOptionExists {
+			standardizedOptionValue, standardizedOptionExists = standardizedOptionsFromArgs[option.Flag]
+			matchedOptionIdentifier = option.Flag
+			if !standardizedOptionExists {
+				commandOptionsInput[option.Name] = OptionInput{Meta: option}
 				continue
 			}
-			optionName = mappedName
 		}
-		option, optionExists := commandOptions[optionName]
-		if !optionExists {
-			continue
+		recognizedOptions[matchedOptionIdentifier] = true
+		commandOptionsInput[option.Name] = OptionInput{Value: standardizedOptionValue, Meta: option}
+	}
+	for commandOptionName, commandOptionInput := range commandOptionsInput {
+		if commandOptionInput.Value == "" {
+			commandOptionInput.Value = commandOptionInput.Meta.Default
 		}
-		commandOptionsInput[optionName] = OptionInput{
-			Value: parts[1],
-			Meta:  option,
+		commandOptionsInput[commandOptionName] = commandOptionInput
+	}
+	for standardizedOptionName := range standardizedOptionsFromArgs {
+		if !recognizedOptions[standardizedOptionName] {
+			c.unknownOptions = append(c.unknownOptions, standardizedOptionName)
 		}
 	}
-	return commandOptionsInput
+	return commandOptionsInput, nil
 }
 
 func (c *CommandDispatcher) getOptionsFromArgs(args []string) []string {
@@ -184,4 +207,18 @@ func (c *CommandDispatcher) getOptionsFromArgs(args []string) []string {
 		}
 	}
 	return optionsFromArgs
+}
+
+func (c *CommandDispatcher) standardizeOptionsFromArgs(optionArguments []string) map[string]string {
+	standardizedOptions := map[string]string{}
+	for _, optionArgument := range optionArguments {
+		parts := strings.SplitN(optionArgument, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		optionName := strings.TrimLeft(parts[0], "-")
+		optionValue := parts[1]
+		standardizedOptions[optionName] = optionValue
+	}
+	return standardizedOptions
 }
