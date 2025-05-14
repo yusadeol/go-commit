@@ -31,8 +31,13 @@ func (g GenerateCommit) GetOptions() []cli.Option {
 
 func (g GenerateCommit) Execute(input *cli.CommandInput) (*cli.ExecutionResult, error) {
 	executionResult := cli.NewExecutionResult()
+	providerFactory := ai.NewProviderFactory()
+	aiProvider, err := providerFactory.Create(input.Options["provider"].Value)
+	if err != nil {
+		return nil, err
+	}
 	generateCommitInput := usecase.NewGenerateCommitInput(
-		ai.NewOpenAI(),
+		aiProvider,
 		input.Options["language"].Value,
 		input.Arguments["diff"].Value,
 	)
