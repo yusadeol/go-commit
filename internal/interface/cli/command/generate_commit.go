@@ -1,7 +1,8 @@
 package command
 
 import (
-	"fmt"
+	"github.com/yusadeol/go-commit/internal/application/usecase"
+	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 )
 
@@ -16,19 +17,30 @@ func (g GenerateCommit) GetName() string {
 }
 
 func (g GenerateCommit) GetArguments() []cli.Argument {
-	return []cli.Argument{}
+	return []cli.Argument{
+		{Name: "diff", Description: "Git diff", Required: false},
+	}
 }
 
 func (g GenerateCommit) GetOptions() []cli.Option {
 	return []cli.Option{
 		{Name: "provider", Flag: "p", Description: "AI Provider", Default: "openai"},
-		{Name: "language", Flag: "l", Description: "Language", Default: "pt_BR"},
+		{Name: "language", Flag: "l", Description: "Language", Default: "en_US"},
 	}
 }
 
 func (g GenerateCommit) Execute(input *cli.CommandInput) (*cli.ExecutionResult, error) {
 	executionResult := cli.NewExecutionResult()
-	executionResult.Message = fmt.Sprintf("My message here. {provider: %s, language: %s}",
-		input.Options["provider"].Value, input.Options["language"].Value)
+	generateCommitInput := usecase.NewGenerateCommitInput(
+		ai.NewOpenAI(),
+		input.Options["language"].Value,
+		input.Arguments["diff"].Value,
+	)
+	generateCommit := usecase.NewGenerateCommit()
+	output, err := generateCommit.Execute(generateCommitInput)
+	if err != nil {
+		return nil, err
+	}
+	executionResult.Message = output.Commit
 	return executionResult, nil
 }
