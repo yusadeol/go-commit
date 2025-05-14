@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 	"github.com/yusadeol/go-commit/internal/interface/cli/command"
 	"log"
@@ -9,6 +10,10 @@ import (
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	args := os.Args[1:]
 	if len(args) == 0 {
 		result := cli.NewExecutionResult()
