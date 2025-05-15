@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
-type OpenAI struct{}
+type OpenAI struct {
+	apiKey string
+}
 
-func NewOpenAI() *OpenAI {
-	return &OpenAI{}
+func NewOpenAI(apiKey string) *OpenAI {
+	return &OpenAI{apiKey: apiKey}
 }
 
 func (o *OpenAI) Ask(input ProviderInput) (*ProviderOutput, error) {
@@ -23,7 +24,7 @@ func (o *OpenAI) Ask(input ProviderInput) (*ProviderOutput, error) {
 		return nil, err
 	}
 	request.Header.Add("Content-Type", "application/json")
-	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", os.Getenv("OPENAI_API_KEY")))
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", o.apiKey))
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {

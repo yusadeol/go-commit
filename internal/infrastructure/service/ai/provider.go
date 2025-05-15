@@ -27,9 +27,9 @@ func NewProviderFactory() *ProviderFactory {
 	return &ProviderFactory{}
 }
 
-func (p *ProviderFactory) Create(providerName string) (Provider, error) {
+func (p *ProviderFactory) Create(providerName string, apiKey string) (Provider, error) {
 	providers := map[string]Provider{
-		"openai": NewOpenAI(),
+		"openai": NewOpenAI(apiKey),
 	}
 	provider, providerExists := providers[providerName]
 	if !providerExists {
