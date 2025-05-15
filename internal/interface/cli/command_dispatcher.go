@@ -11,66 +11,6 @@ type CommandDispatcher struct {
 	unknownOptions           []string
 }
 
-type Command interface {
-	GetName() string
-	GetArguments() []Argument
-	GetOptions() []Option
-	Execute(input *CommandInput) (*ExecutionResult, error)
-}
-
-type Argument struct {
-	Name        string
-	Description string
-	Required    bool
-}
-
-type Option struct {
-	Name        string
-	Flag        string
-	Description string
-	Default     string
-}
-
-type CommandInput struct {
-	Arguments map[string]ArgumentInput
-	Options   map[string]OptionInput
-}
-
-type ArgumentInput struct {
-	Value string
-	Meta  Argument
-}
-
-type OptionInput struct {
-	Value string
-	Meta  Option
-}
-
-func NewCommandInput(arguments map[string]ArgumentInput, options map[string]OptionInput) *CommandInput {
-	return &CommandInput{Arguments: arguments, Options: options}
-}
-
-type ExecutionResult struct {
-	ExitCode ExitCode
-	Message  string
-}
-
-type ExitCode int
-
-const (
-	ExitSuccess           ExitCode = 0
-	ExitError             ExitCode = 1
-	ExitInvalidUsage      ExitCode = 2
-	ExitCommandNotFound   ExitCode = 127
-	ExitPermissionDenied  ExitCode = 126
-	ExitInterruptedByUser ExitCode = 130
-	ExitOutOfMemory       ExitCode = 137
-)
-
-func NewExecutionResult() *ExecutionResult {
-	return &ExecutionResult{ExitCode: ExitSuccess}
-}
-
 func NewCommandDispatcher() *CommandDispatcher {
 	return &CommandDispatcher{commands: make(map[string]Command)}
 }
@@ -79,26 +19,26 @@ func (c *CommandDispatcher) Register(command Command) {
 	c.commands[command.GetName()] = command
 }
 
-func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*ExecutionResult, error) {
-	defaultExecutionResult := NewExecutionResult()
+func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*Result, error) {
+	defaultResult := NewResult()
 	command, exists := c.commands[calledCommandName]
 	if !exists {
-		defaultExecutionResult.ExitCode = ExitCommandNotFound
-		return defaultExecutionResult, nil
+		defaultResult.ExitCode = ExitCodeCommandNotFound
+		return defaultResult, nil
 	}
 	commandInput, err := c.parseCommandInput(command.GetArguments(), c.standardizeOptions(command.GetOptions()), args)
 	if err != nil {
 		return nil, err
 	}
 	if len(c.missingRequiredArguments) > 0 {
-		defaultExecutionResult.ExitCode = ExitInvalidUsage
-		defaultExecutionResult.Message = fmt.Sprintf("Missing required argument(s): %v", c.missingRequiredArguments)
-		return defaultExecutionResult, nil
+		defaultResult.ExitCode = ExitCodeInvalidUsage
+		defaultResult.Message = fmt.Sprintf("Missing required argument(s): %v", c.missingRequiredArguments)
+		return defaultResult, nil
 	}
 	if len(c.unknownOptions) > 0 {
-		defaultExecutionResult.ExitCode = ExitInvalidUsage
-		defaultExecutionResult.Message = fmt.Sprintf("Unknown option(s): %v", c.unknownOptions)
-		return defaultExecutionResult, nil
+		defaultResult.ExitCode = ExitCodeInvalidUsage
+		defaultResult.Message = fmt.Sprintf("Unknown option(s): %v", c.unknownOptions)
+		return defaultResult, nil
 	}
 	return command.Execute(commandInput)
 }

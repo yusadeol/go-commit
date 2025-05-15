@@ -3,6 +3,7 @@ package command
 import (
 	"bytes"
 	"errors"
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/application/usecase"
 	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
@@ -10,31 +11,11 @@ import (
 )
 
 type GenerateCommit struct {
-	configuration *Configuration
+	configuration *vo.Configuration
 }
 
-func NewGenerateCommit(configuration *Configuration) *GenerateCommit {
+func NewGenerateCommit(configuration *vo.Configuration) *GenerateCommit {
 	return &GenerateCommit{configuration: configuration}
-}
-
-type Configuration struct {
-	DefaultAIProvider string                `json:"default_ai_provider"`
-	DefaultLanguage   string                `json:"default_language"`
-	AIProviders       map[string]AIProvider `json:"ai_providers"`
-	Languages         map[string]Language   `json:"languages"`
-}
-
-type AIProvider struct {
-	APIKey       string                 `json:"api_key"`
-	Models       []string               `json:"models"`
-	DefaultModel string                 `json:"default_model"`
-	Enabled      bool                   `json:"enabled"`
-	Settings     map[string]interface{} `json:"settings"`
-}
-
-type Language struct {
-	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
 }
 
 func (g *GenerateCommit) GetName() string {
@@ -54,8 +35,8 @@ func (g *GenerateCommit) GetOptions() []cli.Option {
 	}
 }
 
-func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.ExecutionResult, error) {
-	executionResult := cli.NewExecutionResult()
+func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.Result, error) {
+	Result := cli.NewResult()
 	providerFactory := ai.NewProviderFactory()
 	configurationAiProvider, configurationAiProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
 	if !configurationAiProviderExists {
@@ -83,8 +64,8 @@ func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.ExecutionResult,
 	if err != nil {
 		return nil, err
 	}
-	executionResult.Message = output.Commit
-	return executionResult, nil
+	Result.Message = output.Commit
+	return Result, nil
 }
 
 func (g *GenerateCommit) GetGitDiff() (string, error) {

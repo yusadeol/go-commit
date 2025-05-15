@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 	"github.com/yusadeol/go-commit/internal/interface/cli/command"
 	"log"
@@ -13,17 +14,17 @@ import (
 func main() {
 	args := os.Args[1:]
 	if len(args) == 0 {
-		executionResult := cli.NewExecutionResult()
-		executionResult.ExitCode = cli.ExitInvalidUsage
-		executionResult.Message = "No command provided."
-		printAndExit(executionResult)
+		Result := cli.NewResult()
+		Result.ExitCode = cli.ExitCodeInvalidUsage
+		Result.Message = "No command provided."
+		printAndExitCode(Result)
 	}
 	configuration, err := loadConfiguration()
 	if err != nil {
-		executionResult := cli.NewExecutionResult()
-		executionResult.ExitCode = cli.ExitError
-		executionResult.Message = err.Error()
-		printAndExit(executionResult)
+		Result := cli.NewResult()
+		Result.ExitCode = cli.ExitCodeError
+		Result.Message = err.Error()
+		printAndExitCode(Result)
 	}
 	commandsToRegister := []cli.Command{
 		command.NewGenerateCommit(configuration),
@@ -32,16 +33,16 @@ func main() {
 	for _, commandToRegister := range commandsToRegister {
 		commandDispatcher.Register(commandToRegister)
 	}
-	executionResult, err := commandDispatcher.Dispatch(args[0], args[1:])
+	Result, err := commandDispatcher.Dispatch(args[0], args[1:])
 	if err != nil {
-		executionResult = cli.NewExecutionResult()
-		executionResult.ExitCode = cli.ExitError
-		executionResult.Message = err.Error()
+		Result = cli.NewResult()
+		Result.ExitCode = cli.ExitCodeError
+		Result.Message = err.Error()
 	}
-	printAndExit(executionResult)
+	printAndExitCode(Result)
 }
 
-func loadConfiguration() (*command.Configuration, error) {
+func loadConfiguration() (*vo.Configuration, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return nil, err
@@ -51,7 +52,7 @@ func loadConfiguration() (*command.Configuration, error) {
 	if err != nil {
 		return nil, err
 	}
-	var config command.Configuration
+	var config vo.Configuration
 	err = json.Unmarshal(data, &config)
 	if err != nil {
 		return nil, err
@@ -59,14 +60,14 @@ func loadConfiguration() (*command.Configuration, error) {
 	return &config, nil
 }
 
-func printAndExit(executionResult *cli.ExecutionResult) {
+func printAndExitCode(Result *cli.Result) {
 	outputChannel := os.Stdout
-	if executionResult.ExitCode != cli.ExitSuccess {
+	if Result.ExitCode != cli.ExitCodeSuccess {
 		outputChannel = os.Stderr
 	}
-	_, err := fmt.Fprintln(outputChannel, executionResult.Message)
+	_, err := fmt.Fprintln(outputChannel, Result.Message)
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.Exit(int(executionResult.ExitCode))
+	os.ExitCode(int(Result.ExitCode))
 }

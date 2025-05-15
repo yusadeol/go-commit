@@ -25,10 +25,10 @@ func (m *mockCommand) GetOptions() []Option {
 	}
 }
 
-func (m *mockCommand) Execute(input *CommandInput) (*ExecutionResult, error) {
+func (m *mockCommand) Execute(input *CommandInput) (*Result, error) {
 	m.executed = true
 	m.input = input
-	return NewExecutionResult(), nil
+	return NewResult(), nil
 }
 
 func (m *mockCommand) GetName() string {
@@ -45,8 +45,8 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitSuccess {
-			t.Fatalf("expected ExitSuccess, got: %v", output.ExitCode)
+		if output.ExitCode != ExitCodeSuccess {
+			t.Fatalf("expected ExitCodeSuccess, got: %v", output.ExitCode)
 		}
 		if !command.executed {
 			t.Fatal("expected command to be executed")
@@ -70,8 +70,8 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitInvalidUsage {
-			t.Fatalf("expected ExitInvalidUsage, got: %v", output.ExitCode)
+		if output.ExitCode != ExitCodeInvalidUsage {
+			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
 		}
 		expectedMsg := "Missing required argument(s): [first]"
 		if output.Message != expectedMsg {
@@ -85,8 +85,8 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitCommandNotFound {
-			t.Fatalf("expected ExitCommandNotFound, got: %v", output.ExitCode)
+		if output.ExitCode != ExitCodeCommandNotFound {
+			t.Fatalf("expected ExitCodeCommandNotFound, got: %v", output.ExitCode)
 		}
 	})
 
@@ -99,8 +99,8 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitSuccess {
-			t.Fatalf("expected ExitSuccess, got: %v", output.ExitCode)
+		if output.ExitCode != ExitCodeSuccess {
+			t.Fatalf("expected ExitCodeSuccess, got: %v", output.ExitCode)
 		}
 		opt := command.input.Options["first"]
 		if opt.Value != "default-value" {
@@ -117,8 +117,8 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitInvalidUsage {
-			t.Fatalf("expected ExitInvalidUsage, got: %v", output.ExitCode)
+		if output.ExitCode != ExitCodeInvalidUsage {
+			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
 		}
 	})
 }
