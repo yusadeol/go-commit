@@ -1,28 +1,32 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/joho/godotenv"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 	"github.com/yusadeol/go-commit/internal/interface/cli/command"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	args := os.Args[1:]
 	if len(args) == 0 {
-		result := cli.NewExecutionResult()
-		result.ExitCode = cli.ExitInvalidUsage
-		result.Message = "No command provided."
-		printAndExit(result)
+		executionResult := cli.NewExecutionResult()
+		executionResult.ExitCode = cli.ExitInvalidUsage
+		executionResult.Message = "No command provided."
+		printAndExit(executionResult)
+	}
+	configuration, err := loadConfiguration()
+	if err != nil {
+		executionResult := cli.NewExecutionResult()
+		executionResult.ExitCode = cli.ExitError
+		executionResult.Message = err.Error()
+		printAndExit(executionResult)
 	}
 	commandsToRegister := []cli.Command{
-		command.NewGenerateCommit(),
+		command.NewGenerateCommit(configuration),
 	}
 	commandDispatcher := cli.NewCommandDispatcher()
 	for _, commandToRegister := range commandsToRegister {
@@ -35,6 +39,24 @@ func main() {
 		executionResult.Message = err.Error()
 	}
 	printAndExit(executionResult)
+}
+
+func loadConfiguration() (*command.Configuration, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	configPath := filepath.Join(homeDir, ".config", "commit.json")
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+	var config command.Configuration
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
 }
 
 func printAndExit(executionResult *cli.ExecutionResult) {

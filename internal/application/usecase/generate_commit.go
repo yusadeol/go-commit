@@ -26,7 +26,7 @@ func (g *GenerateCommit) Execute(input *GenerateCommitInput) (*GenerateCommitOut
 		- Add a new feature
 		- Fix a bug
 	`, input.Language)
-	output, err := input.Provider.Ask(ai.ProviderInput{Model: "gpt-4.1", Instructions: instructions, Input: input.Diff})
+	output, err := input.Provider.Ask(ai.ProviderInput{Model: input.Model, Instructions: instructions, Input: input.Diff})
 	if err != nil {
 		return nil, err
 	}
@@ -34,13 +34,14 @@ func (g *GenerateCommit) Execute(input *GenerateCommitInput) (*GenerateCommitOut
 }
 
 type GenerateCommitInput struct {
+	Model    string
 	Provider ai.Provider
 	Language string
 	Diff     string
 }
 
-func NewGenerateCommitInput(provider ai.Provider, language string, diff string) *GenerateCommitInput {
-	return &GenerateCommitInput{Provider: provider, Language: language, Diff: diff}
+func NewGenerateCommitInput(model string, provider ai.Provider, language string, diff string) *GenerateCommitInput {
+	return &GenerateCommitInput{Model: model, Provider: provider, Language: language, Diff: diff}
 }
 
 type GenerateCommitOutput struct {
