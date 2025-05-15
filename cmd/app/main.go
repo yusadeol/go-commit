@@ -69,5 +69,5 @@ func printAndExitCode(Result *cli.Result) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.ExitCode(int(Result.ExitCode))
+	os.Exit(int(Result.ExitCode))
 }
