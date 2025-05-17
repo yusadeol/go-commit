@@ -54,14 +54,14 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 			return nil, err
 		}
 	}
-	GenerateInput := usecase.NewGenerateInput(
+	generateInput := usecase.NewGenerateInput(
 		configurationAiProvider.DefaultModel,
 		aiProvider,
 		input.Options["language"].Value,
 		diff,
 	)
-	Generate := usecase.NewGenerate()
-	output, err := Generate.Execute(GenerateInput)
+	generate := usecase.NewGenerate()
+	output, err := generate.Execute(generateInput)
 	if err != nil {
 		return nil, err
 	}
