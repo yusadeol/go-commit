@@ -11,32 +11,32 @@ import (
 	"os/exec"
 )
 
-type GenerateCommit struct {
+type Generate struct {
 	configuration *vo.Configuration
 }
 
-func NewGenerateCommit(configuration *vo.Configuration) *GenerateCommit {
-	return &GenerateCommit{configuration: configuration}
+func NewGenerate(configuration *vo.Configuration) *Generate {
+	return &Generate{configuration: configuration}
 }
 
-func (g *GenerateCommit) GetName() string {
+func (g *Generate) GetName() string {
 	return "generate"
 }
 
-func (g *GenerateCommit) GetArguments() []cli.Argument {
+func (g *Generate) GetArguments() []cli.Argument {
 	return []cli.Argument{
 		{Name: "diff", Description: "Git diff", Required: false},
 	}
 }
 
-func (g *GenerateCommit) GetOptions() []cli.Option {
+func (g *Generate) GetOptions() []cli.Option {
 	return []cli.Option{
 		{Name: "provider", Flag: "p", Description: "AI Provider", Default: "openai"},
 		{Name: "language", Flag: "l", Description: "Language", Default: "en_US"},
 	}
 }
 
-func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.Result, error) {
+func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	Result := cli.NewResult()
 	providerFactory := ai.NewProviderFactory()
 	configurationAiProvider, configurationAiProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
@@ -54,14 +54,14 @@ func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.Result, error) {
 			return nil, err
 		}
 	}
-	generateCommitInput := usecase.NewGenerateCommitInput(
+	GenerateInput := usecase.NewGenerateInput(
 		configurationAiProvider.DefaultModel,
 		aiProvider,
 		input.Options["language"].Value,
 		diff,
 	)
-	generateCommit := usecase.NewGenerateCommit()
-	output, err := generateCommit.Execute(generateCommitInput)
+	Generate := usecase.NewGenerate()
+	output, err := Generate.Execute(GenerateInput)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	return Result, nil
 }
 
-func (g *GenerateCommit) GetGitDiff() (string, error) {
+func (g *Generate) GetGitDiff() (string, error) {
 	var out bytes.Buffer
 	cmd := exec.Command("git", "diff", "--staged")
 	cmd.Stdout = &out
@@ -93,7 +93,7 @@ func (g *GenerateCommit) GetGitDiff() (string, error) {
 	return diff, nil
 }
 
-func (g *GenerateCommit) CommitChanges(commit string) error {
+func (g *Generate) CommitChanges(commit string) error {
 	var out bytes.Buffer
 	cmd := exec.Command("git", "commit", "-m", commit)
 	cmd.Stdout = &out

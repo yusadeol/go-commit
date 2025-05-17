@@ -27,7 +27,7 @@ func main() {
 		printAndExitCode(Result)
 	}
 	commandsToRegister := []cli.Command{
-		command.NewGenerateCommit(configuration),
+		command.NewGenerate(configuration),
 	}
 	commandDispatcher := cli.NewCommandDispatcher()
 	for _, commandToRegister := range commandsToRegister {

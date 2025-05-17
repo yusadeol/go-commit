@@ -5,13 +5,13 @@ import (
 	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
 )
 
-type GenerateCommit struct{}
+type Generate struct{}
 
-func NewGenerateCommit() *GenerateCommit {
-	return &GenerateCommit{}
+func NewGenerate() *Generate {
+	return &Generate{}
 }
 
-func (g *GenerateCommit) Execute(input *GenerateCommitInput) (*GenerateCommitOutput, error) {
+func (g *Generate) Execute(input *GenerateInput) (*GenerateOutput, error) {
 	instructions := fmt.Sprintf(`
         Write a commit message for this diff following Conventional Commits specification.
 		Do NOT use scopes.
@@ -30,24 +30,24 @@ func (g *GenerateCommit) Execute(input *GenerateCommitInput) (*GenerateCommitOut
 	if err != nil {
 		return nil, err
 	}
-	return NewGenerateCommitOutput(output.Text), nil
+	return NewGenerateOutput(output.Text), nil
 }
 
-type GenerateCommitInput struct {
+type GenerateInput struct {
 	Model    string
 	Provider ai.Provider
 	Language string
 	Diff     string
 }
 
-func NewGenerateCommitInput(model string, provider ai.Provider, language string, diff string) *GenerateCommitInput {
-	return &GenerateCommitInput{Model: model, Provider: provider, Language: language, Diff: diff}
+func NewGenerateInput(model string, provider ai.Provider, language string, diff string) *GenerateInput {
+	return &GenerateInput{Model: model, Provider: provider, Language: language, Diff: diff}
 }
 
-type GenerateCommitOutput struct {
+type GenerateOutput struct {
 	Commit string
 }
 
-func NewGenerateCommitOutput(commit string) *GenerateCommitOutput {
-	return &GenerateCommitOutput{Commit: commit}
+func NewGenerateOutput(commit string) *GenerateOutput {
+	return &GenerateOutput{Commit: commit}
 }
