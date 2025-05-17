@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"strings"
 )
 
@@ -32,12 +33,12 @@ func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*
 	}
 	if len(c.missingRequiredArguments) > 0 {
 		defaultResult.ExitCode = ExitCodeInvalidUsage
-		defaultResult.Message = fmt.Sprintf("Missing required argument(s): %v", c.missingRequiredArguments)
+		defaultResult.Message = vo.NewColoredText(fmt.Sprintf("<error>Missing required argument(s): %v</error>", c.missingRequiredArguments))
 		return defaultResult, nil
 	}
 	if len(c.unknownOptions) > 0 {
 		defaultResult.ExitCode = ExitCodeInvalidUsage
-		defaultResult.Message = fmt.Sprintf("Unknown option(s): %v", c.unknownOptions)
+		defaultResult.Message = vo.NewColoredText(fmt.Sprintf("<error>Unknown option(s): %v</error>", c.unknownOptions))
 		return defaultResult, nil
 	}
 	return command.Execute(commandInput)

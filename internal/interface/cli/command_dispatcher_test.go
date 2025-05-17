@@ -74,8 +74,8 @@ func TestCommandDispatcher(t *testing.T) {
 			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
 		}
 		expectedMsg := "Missing required argument(s): [first]"
-		if output.Message != expectedMsg {
-			t.Errorf("expected message %q, got: %q", expectedMsg, output.Message)
+		if output.Message.Render() != expectedMsg {
+			t.Errorf("expected message %q, got: %q", expectedMsg, output.Message.Render())
 		}
 	})
 

@@ -16,14 +16,14 @@ func main() {
 	if len(args) == 0 {
 		Result := cli.NewResult()
 		Result.ExitCode = cli.ExitCodeInvalidUsage
-		Result.Message = "No command provided."
+		Result.Message = vo.NewColoredText("<error>No command provided.</error>")
 		printAndExitCode(Result)
 	}
 	configuration, err := loadConfiguration()
 	if err != nil {
 		Result := cli.NewResult()
 		Result.ExitCode = cli.ExitCodeError
-		Result.Message = err.Error()
+		Result.Message = vo.NewColoredText(fmt.Sprintf("<error>%s</error>", err.Error()))
 		printAndExitCode(Result)
 	}
 	commandsToRegister := []cli.Command{
@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		Result = cli.NewResult()
 		Result.ExitCode = cli.ExitCodeError
-		Result.Message = err.Error()
+		Result.Message = vo.NewColoredText(fmt.Sprintf("<error>%s</error>", err.Error()))
 	}
 	printAndExitCode(Result)
 }
@@ -65,7 +65,7 @@ func printAndExitCode(Result *cli.Result) {
 	if Result.ExitCode != cli.ExitCodeSuccess {
 		outputChannel = os.Stderr
 	}
-	_, err := fmt.Fprintln(outputChannel, Result.Message)
+	_, err := fmt.Fprintln(outputChannel, Result.Message.Render())
 	if err != nil {
 		log.Fatal(err)
 	}

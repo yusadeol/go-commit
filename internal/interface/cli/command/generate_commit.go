@@ -3,6 +3,7 @@ package command
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/application/usecase"
 	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
@@ -64,7 +65,15 @@ func (g *GenerateCommit) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	Result.Message = output.Commit
+	err = g.CommitChanges(output.Commit)
+	if err != nil {
+		return nil, err
+	}
+	message := []string{
+		"<info>Commit generated and applied successfully!</info>",
+		fmt.Sprintf("<comment>%s</comment>", output.Commit),
+	}
+	Result.Message = vo.NewColoredMultilineText(message)
 	return Result, nil
 }
 
@@ -82,4 +91,16 @@ func (g *GenerateCommit) GetGitDiff() (string, error) {
 		return "", errors.New("no staged changes found")
 	}
 	return diff, nil
+}
+
+func (g *GenerateCommit) CommitChanges(commit string) error {
+	var out bytes.Buffer
+	cmd := exec.Command("git", "commit", "-m", commit)
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -1,8 +1,10 @@
 package cli
 
+import "github.com/yusadeol/go-commit/internal/Domain/vo"
+
 type Result struct {
 	ExitCode ExitCode
-	Message  string
+	Message  *vo.ColoredText
 }
 
 type ExitCode int
