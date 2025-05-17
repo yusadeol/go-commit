@@ -4,27 +4,40 @@ import (
 	"strings"
 )
 
-type ColoredText struct {
+var markupToANSI = map[string]string{
+	"<info>":     "\033[32m",
+	"</info>":    "\033[0m",
+	"<error>":    "\033[31m",
+	"</error>":   "\033[0m",
+	"<comment>":  "\033[33m",
+	"</comment>": "\033[0m",
+}
+
+type MarkupText struct {
 	text string
 }
 
-func NewColoredText(text string) *ColoredText {
-	return &ColoredText{text: text}
+func NewMarkupText(text string) *MarkupText {
+	return &MarkupText{text: text}
 }
 
-func NewColoredMultilineText(lines []string) *ColoredText {
+func NewColoredMultilineText(lines []string) *MarkupText {
 	joined := strings.Join(lines, "\n")
-	return &ColoredText{text: joined}
+	return &MarkupText{text: joined}
 }
 
-func (c ColoredText) Render() string {
-	replacer := strings.NewReplacer(
-		"<info>", "\033[32m",
-		"</info>", "\033[0m",
-		"<error>", "\033[31m",
-		"</error>", "\033[0m",
-		"<comment>", "\033[33m",
-		"</comment>", "\033[0m",
-	)
-	return replacer.Replace(c.text)
+func (m MarkupText) ToANSI() string {
+	out := m.text
+	for tag, ansi := range markupToANSI {
+		out = strings.ReplaceAll(out, tag, ansi)
+	}
+	return out
+}
+
+func (m MarkupText) Plain() string {
+	out := m.text
+	for tag := range markupToANSI {
+		out = strings.ReplaceAll(out, tag, "")
+	}
+	return out
 }

@@ -18,7 +18,7 @@ func (a Application) Run(args []string) (*ApplicationOutput, error) {
 	if len(args) == 0 {
 		return &ApplicationOutput{
 			ExitCode: vo.ExitCodeError,
-			Message:  vo.NewColoredText("<error>No command provided.</error>").Render(),
+			Message:  vo.NewMarkupText("<error>No command provided.</error>").ToANSI(),
 		}, nil
 	}
 	result, err := a.commandDispatcher.Dispatch(args[0], args[1:])
@@ -27,7 +27,7 @@ func (a Application) Run(args []string) (*ApplicationOutput, error) {
 	}
 	return &ApplicationOutput{
 		ExitCode: result.ExitCode,
-		Message:  result.Message.Render(),
+		Message:  result.Message.ToANSI(),
 	}, nil
 }
 

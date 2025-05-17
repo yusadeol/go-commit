@@ -4,7 +4,7 @@ import "github.com/yusadeol/go-commit/internal/Domain/vo"
 
 type Result struct {
 	ExitCode vo.ExitCode
-	Message  *vo.ColoredText
+	Message  *vo.MarkupText
 }
 
 func NewResult() *Result {
