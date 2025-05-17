@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"testing"
 )
 
@@ -45,7 +46,7 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitCodeSuccess {
+		if output.ExitCode != vo.ExitCodeSuccess {
 			t.Fatalf("expected ExitCodeSuccess, got: %v", output.ExitCode)
 		}
 		if !command.executed {
@@ -70,7 +71,7 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitCodeInvalidUsage {
+		if output.ExitCode != vo.ExitCodeInvalidUsage {
 			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
 		}
 		expectedMsg := "Missing required argument(s): [first]"
@@ -85,7 +86,7 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitCodeCommandNotFound {
+		if output.ExitCode != vo.ExitCodeCommandNotFound {
 			t.Fatalf("expected ExitCodeCommandNotFound, got: %v", output.ExitCode)
 		}
 	})
@@ -99,7 +100,7 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitCodeSuccess {
+		if output.ExitCode != vo.ExitCodeSuccess {
 			t.Fatalf("expected ExitCodeSuccess, got: %v", output.ExitCode)
 		}
 		opt := command.input.Options["first"]
@@ -117,7 +118,7 @@ func TestCommandDispatcher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if output.ExitCode != ExitCodeInvalidUsage {
+		if output.ExitCode != vo.ExitCodeInvalidUsage {
 			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
 		}
 	})

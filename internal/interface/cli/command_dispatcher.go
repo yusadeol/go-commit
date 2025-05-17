@@ -24,7 +24,7 @@ func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*
 	defaultResult := NewResult()
 	command, exists := c.commands[calledCommandName]
 	if !exists {
-		defaultResult.ExitCode = ExitCodeCommandNotFound
+		defaultResult.ExitCode = vo.ExitCodeCommandNotFound
 		return defaultResult, nil
 	}
 	commandInput, err := c.parseCommandInput(command.GetArguments(), c.standardizeOptions(command.GetOptions()), args)
@@ -32,12 +32,12 @@ func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*
 		return nil, err
 	}
 	if len(c.missingRequiredArguments) > 0 {
-		defaultResult.ExitCode = ExitCodeInvalidUsage
+		defaultResult.ExitCode = vo.ExitCodeInvalidUsage
 		defaultResult.Message = vo.NewColoredText(fmt.Sprintf("<error>Missing required argument(s): %v</error>", c.missingRequiredArguments))
 		return defaultResult, nil
 	}
 	if len(c.unknownOptions) > 0 {
-		defaultResult.ExitCode = ExitCodeInvalidUsage
+		defaultResult.ExitCode = vo.ExitCodeInvalidUsage
 		defaultResult.Message = vo.NewColoredText(fmt.Sprintf("<error>Unknown option(s): %v</error>", c.unknownOptions))
 		return defaultResult, nil
 	}

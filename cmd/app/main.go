@@ -6,40 +6,25 @@ import (
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 	"github.com/yusadeol/go-commit/internal/interface/cli/command"
-	"log"
 	"os"
 	"path/filepath"
 )
 
 func main() {
 	args := os.Args[1:]
-	if len(args) == 0 {
-		Result := cli.NewResult()
-		Result.ExitCode = cli.ExitCodeInvalidUsage
-		Result.Message = vo.NewColoredText("<error>No command provided.</error>")
-		printAndExitCode(Result)
-	}
-	configuration, err := loadConfiguration()
+	config, err := loadConfiguration()
 	if err != nil {
-		Result := cli.NewResult()
-		Result.ExitCode = cli.ExitCodeError
-		Result.Message = vo.NewColoredText(fmt.Sprintf("<error>%s</error>", err.Error()))
-		printAndExitCode(Result)
+		exitWithMessage(vo.ExitCodeError, err.Error())
 	}
 	commandsToRegister := []cli.Command{
-		command.NewGenerate(configuration),
+		command.NewGenerate(config),
 	}
-	commandDispatcher := cli.NewCommandDispatcher()
-	for _, commandToRegister := range commandsToRegister {
-		commandDispatcher.Register(commandToRegister)
-	}
-	Result, err := commandDispatcher.Dispatch(args[0], args[1:])
+	app := cli.NewApplication(commandsToRegister)
+	output, err := app.Run(args)
 	if err != nil {
-		Result = cli.NewResult()
-		Result.ExitCode = cli.ExitCodeError
-		Result.Message = vo.NewColoredText(fmt.Sprintf("<error>%s</error>", err.Error()))
+		exitWithMessage(vo.ExitCodeError, err.Error())
 	}
-	printAndExitCode(Result)
+	exitWithMessage(output.ExitCode, output.Message)
 }
 
 func loadConfiguration() (*vo.Configuration, error) {
@@ -60,14 +45,11 @@ func loadConfiguration() (*vo.Configuration, error) {
 	return &config, nil
 }
 
-func printAndExitCode(Result *cli.Result) {
+func exitWithMessage(exitCode vo.ExitCode, message string) {
 	outputChannel := os.Stdout
-	if Result.ExitCode != cli.ExitCodeSuccess {
+	if exitCode != vo.ExitCodeSuccess {
 		outputChannel = os.Stderr
 	}
-	_, err := fmt.Fprintln(outputChannel, Result.Message.Render())
-	if err != nil {
-		log.Fatal(err)
-	}
-	os.Exit(int(Result.ExitCode))
+	fmt.Fprintln(outputChannel, message)
+	os.Exit(int(exitCode))
 }
