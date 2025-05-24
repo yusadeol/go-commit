@@ -8,11 +8,11 @@ type Configuration struct {
 }
 
 type AIProvider struct {
-	APIKey       string                 `json:"api_key"`
-	Models       []string               `json:"models"`
-	DefaultModel string                 `json:"default_model"`
-	Enabled      bool                   `json:"enabled"`
-	Settings     map[string]interface{} `json:"settings"`
+	APIKey       string         `json:"api_key"`
+	Models       []string       `json:"models"`
+	DefaultModel string         `json:"default_model"`
+	Enabled      bool           `json:"enabled"`
+	Settings     map[string]any `json:"settings"`
 }
 
 type Language struct {
