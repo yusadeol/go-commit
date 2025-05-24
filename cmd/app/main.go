@@ -3,21 +3,22 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 	"github.com/yusadeol/go-commit/internal/interface/cli/command"
-	"os"
-	"path/filepath"
 )
 
 func main() {
 	args := os.Args[1:]
-	config, err := loadConfiguration()
+	configuration, err := loadConfiguration()
 	if err != nil {
 		exitWithMessage(vo.ExitCodeError, err.Error())
 	}
 	commandsToRegister := []cli.Command{
-		command.NewGenerate(config),
+		command.NewGenerate(configuration),
 	}
 	app := cli.NewApplication(commandsToRegister)
 	output, err := app.Run(args)
@@ -32,17 +33,17 @@ func loadConfiguration() (*vo.Configuration, error) {
 	if err != nil {
 		return nil, err
 	}
-	configPath := filepath.Join(homeDir, ".config", "commit.json")
-	data, err := os.ReadFile(configPath)
+	configurationPath := filepath.Join(homeDir, ".config", "commit.json")
+	data, err := os.ReadFile(configurationPath)
 	if err != nil {
 		return nil, err
 	}
-	var config vo.Configuration
-	err = json.Unmarshal(data, &config)
+	var configuration vo.Configuration
+	err = json.Unmarshal(data, &configuration)
 	if err != nil {
 		return nil, err
 	}
-	return &config, nil
+	return &configuration, nil
 }
 
 func exitWithMessage(exitCode vo.ExitCode, message string) {
