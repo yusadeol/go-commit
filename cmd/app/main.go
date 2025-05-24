@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
+	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 	"github.com/yusadeol/go-commit/internal/interface/cli/command"
 )
@@ -18,7 +19,7 @@ func main() {
 		exitWithMessage(vo.ExitCodeError, err.Error())
 	}
 	commandsToRegister := []cli.Command{
-		command.NewGenerate(configuration),
+		command.NewGenerate(configuration, ai.NewProviderFactory()),
 	}
 	app := cli.NewApplication(commandsToRegister)
 	output, err := app.Run(args)
