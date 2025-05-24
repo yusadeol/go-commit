@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"fmt"
+
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
 )
 
@@ -12,6 +14,10 @@ func NewGenerate() *Generate {
 }
 
 func (g *Generate) Execute(input *GenerateInput) (*GenerateOutput, error) {
+	aiProvider, err := input.ProviderFactory.Create(input.AIProvider.ID, input.AIProvider.APIKey)
+	if err != nil {
+		return nil, err
+	}
 	instructions := fmt.Sprintf(`
         Write a commit message for this diff following Conventional Commits specification.
 		Do NOT use scopes.
@@ -25,29 +31,25 @@ func (g *Generate) Execute(input *GenerateInput) (*GenerateOutput, error) {
 
 		- Add a new feature
 		- Fix a bug
-	`, input.Language)
-	output, err := input.Provider.Ask(ai.ProviderInput{Model: input.Model, Instructions: instructions, Input: input.Diff})
+	`, input.Language.DisplayName)
+	output, err := aiProvider.Ask(&ai.ProviderInput{
+		Model:        input.AIProvider.DefaultModel,
+		Instructions: instructions,
+		Input:        input.Diff,
+	})
 	if err != nil {
 		return nil, err
 	}
-	return NewGenerateOutput(output.Text), nil
+	return &GenerateOutput{Commit: output.Text}, nil
 }
 
 type GenerateInput struct {
-	Model    string
-	Provider ai.Provider
-	Language string
-	Diff     string
-}
-
-func NewGenerateInput(model string, provider ai.Provider, language string, diff string) *GenerateInput {
-	return &GenerateInput{Model: model, Provider: provider, Language: language, Diff: diff}
+	ProviderFactory *ai.ProviderFactory
+	AIProvider      *vo.AIProvider
+	Language        *vo.Language
+	Diff            string
 }
 
 type GenerateOutput struct {
 	Commit string
-}
-
-func NewGenerateOutput(commit string) *GenerateOutput {
-	return &GenerateOutput{Commit: commit}
 }

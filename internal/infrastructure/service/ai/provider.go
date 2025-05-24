@@ -7,7 +7,7 @@ var (
 )
 
 type Provider interface {
-	Ask(input ProviderInput) (*ProviderOutput, error)
+	Ask(input *ProviderInput) (*ProviderOutput, error)
 }
 
 type ProviderInput struct {
@@ -27,11 +27,11 @@ func NewProviderFactory() *ProviderFactory {
 	return &ProviderFactory{}
 }
 
-func (p *ProviderFactory) Create(providerName string, apiKey string) (Provider, error) {
+func (p *ProviderFactory) Create(id string, apiKey string) (Provider, error) {
 	providers := map[string]Provider{
 		"openai": NewOpenAI(apiKey),
 	}
-	provider, providerExists := providers[providerName]
+	provider, providerExists := providers[id]
 	if !providerExists {
 		return nil, ErrProviderNotFound
 	}

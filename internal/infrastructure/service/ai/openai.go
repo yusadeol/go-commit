@@ -16,7 +16,7 @@ func NewOpenAI(apiKey string) *OpenAI {
 	return &OpenAI{apiKey: apiKey}
 }
 
-func (o *OpenAI) Ask(input ProviderInput) (*ProviderOutput, error) {
+func (o *OpenAI) Ask(input *ProviderInput) (*ProviderOutput, error) {
 	requestBody, _ := json.Marshal(input)
 	payload := bytes.NewBuffer(requestBody)
 	request, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/responses", payload)
