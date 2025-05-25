@@ -44,7 +44,7 @@ func (g *Generate) Execute(input *GenerateInput) (*GenerateOutput, error) {
 }
 
 type GenerateInput struct {
-	AIProviderFactory *ai.ProviderFactory
+	AIProviderFactory ai.ProviderFactoryInterface
 	AIProvider        *vo.AIProvider
 	Language          *vo.Language
 	Diff              string

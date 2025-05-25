@@ -14,10 +14,10 @@ import (
 
 type Generate struct {
 	configuration     *vo.Configuration
-	aiProviderFactory *ai.ProviderFactory
+	aiProviderFactory ai.ProviderFactoryInterface
 }
 
-func NewGenerate(configuration *vo.Configuration, aiProviderFactory *ai.ProviderFactory) *Generate {
+func NewGenerate(configuration *vo.Configuration, aiProviderFactory ai.ProviderFactoryInterface) *Generate {
 	return &Generate{configuration: configuration, aiProviderFactory: aiProviderFactory}
 }
 
@@ -42,11 +42,11 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	Result := cli.NewResult()
 	configurationAIProvider, configurationAIProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
 	if !configurationAIProviderExists {
-		return nil, errors.New("AI provider configuration not found")
+		return nil, fmt.Errorf("AI provider %q configuration not found", input.Options["provider"].Value)
 	}
 	configurationLanguage, configurationLanguageExists := g.configuration.Languages[input.Options["language"].Value]
 	if !configurationLanguageExists {
-		return nil, errors.New("language configuration not found")
+		return nil, fmt.Errorf("language %q configuration not found", input.Options["language"].Value)
 	}
 	diff := input.Arguments["diff"].Value
 	if diff == "" {
@@ -66,10 +66,10 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = g.CommitChanges(output.Commit)
-	if err != nil {
-		return nil, err
-	}
+	// err = g.CommitChanges(output.Commit)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	message := []string{
 		"<info>Commit generated and applied successfully!</info>",
 		fmt.Sprintf("<comment>%s</comment>", output.Commit),

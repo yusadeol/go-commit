@@ -21,9 +21,13 @@ type ProviderOutput struct {
 	Text   string
 }
 
+type ProviderFactoryInterface interface {
+	Create(id string, apiKey string) (Provider, error)
+}
+
 type ProviderFactory struct{}
 
-func NewProviderFactory() *ProviderFactory {
+func NewProviderFactory() ProviderFactoryInterface {
 	return &ProviderFactory{}
 }
 
