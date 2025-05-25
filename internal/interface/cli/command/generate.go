@@ -35,6 +35,7 @@ func (g *Generate) GetOptions() []cli.Option {
 	return []cli.Option{
 		{Name: "provider", Flag: "p", Description: "AI Provider", Default: "openai"},
 		{Name: "language", Flag: "l", Description: "Language", Default: "en_US"},
+		{Name: "commit", Flag: "c", Description: "Commit", Default: "true"},
 	}
 }
 
@@ -66,10 +67,12 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	// err = g.CommitChanges(output.Commit)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if input.Options["commit"].Value == "true" {
+		err = g.CommitChanges(output.Commit)
+		if err != nil {
+			return nil, err
+		}
+	}
 	message := []string{
 		"<info>Commit generated and applied successfully!</info>",
 		fmt.Sprintf("<comment>%s</comment>", output.Commit),

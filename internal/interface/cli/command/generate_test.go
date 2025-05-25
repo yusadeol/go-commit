@@ -71,6 +71,7 @@ func TestGenerate(t *testing.T) {
 			Options: map[string]cli.OptionInput{
 				"provider": {Value: "mock", Meta: cli.Option{Name: "provider", Flag: "p", Description: "AI Provider", Default: "mock"}},
 				"language": {Value: "en_US", Meta: cli.Option{Name: "language", Flag: "l", Description: "Language", Default: "en_US"}},
+				"commit":   {Value: "false", Meta: cli.Option{Name: "commit", Flag: "c", Description: "Commit", Default: "true"}},
 			},
 		})
 		if err != nil {
