@@ -42,9 +42,9 @@ func (m *MockProvider) Ask(input *ai.ProviderInput) (*ai.ProviderOutput, error) 
 	}, nil
 }
 
-type MockProviderFactory struct{}
+type MockDefaultProviderFactory struct{}
 
-func (m *MockProviderFactory) Create(id string, apiKey string) (ai.Provider, error) {
+func (m *MockDefaultProviderFactory) Create(id string, apiKey string) (ai.Provider, error) {
 	return &MockProvider{}, nil
 }
 
@@ -63,7 +63,7 @@ func TestGenerate(t *testing.T) {
 				"en_US": {ID: "en_US", DisplayName: "English (US)", Enabled: true},
 			},
 		}
-		generate := NewGenerate(&mockConfiguration, &MockProviderFactory{})
+		generate := NewGenerate(&mockConfiguration, &MockDefaultProviderFactory{})
 		result, err := generate.Execute(&cli.CommandInput{
 			Arguments: map[string]cli.ArgumentInput{
 				"diff": {Value: mockDiff, Meta: cli.Argument{Name: "diff", Description: "Git diff", Required: false}},

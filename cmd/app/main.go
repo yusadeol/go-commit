@@ -19,7 +19,7 @@ func main() {
 		exitWithMessage(vo.ExitCodeError, err.Error())
 	}
 	commandsToRegister := []cli.Command{
-		command.NewGenerate(configuration, ai.NewProviderFactory()),
+		command.NewGenerate(configuration, ai.NewDefaultProviderFactory()),
 	}
 	app := cli.NewApplication(commandsToRegister)
 	output, err := app.Run(args)

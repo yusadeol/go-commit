@@ -21,17 +21,17 @@ type ProviderOutput struct {
 	Text   string
 }
 
-type ProviderFactoryInterface interface {
+type ProviderFactory interface {
 	Create(id string, apiKey string) (Provider, error)
 }
 
-type ProviderFactory struct{}
+type DefaultProviderFactory struct{}
 
-func NewProviderFactory() ProviderFactoryInterface {
-	return &ProviderFactory{}
+func NewDefaultProviderFactory() ProviderFactory {
+	return &DefaultProviderFactory{}
 }
 
-func (p *ProviderFactory) Create(id string, apiKey string) (Provider, error) {
+func (p *DefaultProviderFactory) Create(id string, apiKey string) (Provider, error) {
 	providers := map[string]Provider{
 		"openai": NewOpenAI(apiKey),
 	}

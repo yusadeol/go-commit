@@ -14,7 +14,7 @@ func NewGenerate() *Generate {
 }
 
 func (g *Generate) Execute(input *GenerateInput) (*GenerateOutput, error) {
-	aiProvider, err := input.AIProviderFactory.Create(input.AIProvider.ID, input.AIProvider.APIKey)
+	aiProvider, err := input.AIDefaultProviderFactory.Create(input.AIProvider.ID, input.AIProvider.APIKey)
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +44,10 @@ func (g *Generate) Execute(input *GenerateInput) (*GenerateOutput, error) {
 }
 
 type GenerateInput struct {
-	AIProviderFactory ai.ProviderFactoryInterface
-	AIProvider        *vo.AIProvider
-	Language          *vo.Language
-	Diff              string
+	AIDefaultProviderFactory ai.ProviderFactory
+	AIProvider               *vo.AIProvider
+	Language                 *vo.Language
+	Diff                     string
 }
 
 type GenerateOutput struct {

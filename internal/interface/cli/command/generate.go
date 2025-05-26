@@ -13,12 +13,12 @@ import (
 )
 
 type Generate struct {
-	configuration     *vo.Configuration
-	aiProviderFactory ai.ProviderFactoryInterface
+	configuration            *vo.Configuration
+	aiDefaultProviderFactory ai.ProviderFactory
 }
 
-func NewGenerate(configuration *vo.Configuration, aiProviderFactory ai.ProviderFactoryInterface) *Generate {
-	return &Generate{configuration: configuration, aiProviderFactory: aiProviderFactory}
+func NewGenerate(configuration *vo.Configuration, aiDefaultProviderFactory ai.ProviderFactory) *Generate {
+	return &Generate{configuration: configuration, aiDefaultProviderFactory: aiDefaultProviderFactory}
 }
 
 func (g *Generate) GetName() string {
@@ -59,10 +59,10 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	}
 	generate := usecase.NewGenerate()
 	output, err := generate.Execute(&usecase.GenerateInput{
-		AIProviderFactory: g.aiProviderFactory,
-		AIProvider:        &configurationAIProvider,
-		Language:          &configurationLanguage,
-		Diff:              diff,
+		AIDefaultProviderFactory: g.aiDefaultProviderFactory,
+		AIProvider:               &configurationAIProvider,
+		Language:                 &configurationLanguage,
+		Diff:                     diff,
 	})
 	if err != nil {
 		return nil, err
