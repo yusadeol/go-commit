@@ -58,7 +58,7 @@ func (g *Generate) GetOptions() []cli.Option {
 }
 
 func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
-	Result := cli.NewResult()
+	result := cli.NewResult()
 	configurationAIProvider, configurationAIProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
 	if !configurationAIProviderExists {
 		return nil, fmt.Errorf("AI provider %q configuration not found", input.Options["provider"].Value)
@@ -95,8 +95,8 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 		"<info>Commit generated and applied successfully!</info>",
 		fmt.Sprintf("<comment>%s</comment>", output.Commit),
 	}
-	Result.Message = vo.NewColoredMultilineText(message)
-	return Result, nil
+	result.Message = vo.NewColoredMultilineText(message)
+	return result, nil
 }
 
 func (g *Generate) GetGitDiff() (string, error) {
