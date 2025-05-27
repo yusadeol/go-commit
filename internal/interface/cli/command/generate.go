@@ -33,9 +33,27 @@ func (g *Generate) GetArguments() []cli.Argument {
 
 func (g *Generate) GetOptions() []cli.Option {
 	return []cli.Option{
-		{Name: "provider", Flag: "p", Description: "AI Provider", Default: "openai"},
-		{Name: "language", Flag: "l", Description: "Language", Default: "en_US"},
-		{Name: "commit", Flag: "c", Description: "Commit", Default: "true"},
+		{
+			Name:          "provider",
+			Flag:          "p",
+			Description:   "AI Provider",
+			AllowedValues: []string{"openai"},
+			Default:       "openai",
+		},
+		{
+			Name:          "language",
+			Flag:          "l",
+			Description:   "Language",
+			AllowedValues: []string{"en_US", "pt_BR", "es_ES"},
+			Default:       "en_US",
+		},
+		{
+			Name:          "commit",
+			Flag:          "c",
+			Description:   "Commit",
+			AllowedValues: []string{"true", "false"},
+			Default:       "true",
+		},
 	}
 }
 

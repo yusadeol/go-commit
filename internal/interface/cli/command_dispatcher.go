@@ -2,14 +2,13 @@ package cli
 
 import (
 	"fmt"
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"strings"
+
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 )
 
 type CommandDispatcher struct {
-	commands                 map[string]Command
-	missingRequiredArguments []string
-	unknownOptions           []string
+	commands map[string]Command
 }
 
 func NewCommandDispatcher() *CommandDispatcher {
@@ -21,25 +20,19 @@ func (c *CommandDispatcher) Register(command Command) {
 }
 
 func (c *CommandDispatcher) Dispatch(calledCommandName string, args []string) (*Result, error) {
-	defaultResult := NewResult()
 	command, exists := c.commands[calledCommandName]
 	if !exists {
-		defaultResult.ExitCode = vo.ExitCodeCommandNotFound
-		return defaultResult, nil
+		return &Result{
+			ExitCode: vo.ExitCodeCommandNotFound,
+			Message:  vo.NewMarkupText("<error>command not found</error>"),
+		}, nil
 	}
 	commandInput, err := c.parseCommandInput(command.GetArguments(), c.standardizeOptions(command.GetOptions()), args)
 	if err != nil {
-		return nil, err
-	}
-	if len(c.missingRequiredArguments) > 0 {
-		defaultResult.ExitCode = vo.ExitCodeInvalidUsage
-		defaultResult.Message = vo.NewMarkupText(fmt.Sprintf("<error>Missing required argument(s): %v</error>", c.missingRequiredArguments))
-		return defaultResult, nil
-	}
-	if len(c.unknownOptions) > 0 {
-		defaultResult.ExitCode = vo.ExitCodeInvalidUsage
-		defaultResult.Message = vo.NewMarkupText(fmt.Sprintf("<error>Unknown option(s): %v</error>", c.unknownOptions))
-		return defaultResult, nil
+		return &Result{
+			ExitCode: vo.ExitCodeInvalidUsage,
+			Message:  vo.NewMarkupText(fmt.Sprintf("<error>%s</error>", err.Error())),
+		}, nil
 	}
 	return command.Execute(commandInput)
 }
@@ -73,7 +66,7 @@ func (c *CommandDispatcher) parseArguments(arguments []Argument, args []string) 
 			continue
 		}
 		if argument.Required {
-			c.missingRequiredArguments = append(c.missingRequiredArguments, argument.Name)
+			return nil, fmt.Errorf("missing required argument: %s", argument.Name)
 		}
 	}
 	return argumentInputs, nil
@@ -102,17 +95,31 @@ func (c *CommandDispatcher) parseOptions(options map[string]Option, args []strin
 	optionInputs := map[string]OptionInput{}
 	recognizedOptions := map[string]bool{}
 	for _, option := range options {
-		standardizedOptionValue, standardizedOptionExists := standardizedOptionsFromArgs[option.Name]
 		matchedOptionIdentifier := option.Name
+		standardizedOptionValue, standardizedOptionExists := standardizedOptionsFromArgs[matchedOptionIdentifier]
 		if !standardizedOptionExists {
-			standardizedOptionValue, standardizedOptionExists = standardizedOptionsFromArgs[option.Flag]
 			matchedOptionIdentifier = option.Flag
+			standardizedOptionValue, standardizedOptionExists = standardizedOptionsFromArgs[matchedOptionIdentifier]
 			if !standardizedOptionExists {
 				optionInputs[option.Name] = OptionInput{Meta: option}
 				continue
 			}
 		}
 		recognizedOptions[matchedOptionIdentifier] = true
+		valueIsRecognized := false
+		if len(option.AllowedValues) > 0 {
+			for _, allowedValue := range option.AllowedValues {
+				if allowedValue == standardizedOptionValue {
+					valueIsRecognized = true
+				}
+			}
+			if !valueIsRecognized {
+				return nil, fmt.Errorf(
+					"invalid value for option %q: %q. Allowed values are: %s",
+					option.Name, standardizedOptionValue, strings.Join(option.AllowedValues, ", "),
+				)
+			}
+		}
 		optionInputs[option.Name] = OptionInput{Value: standardizedOptionValue, Meta: option}
 	}
 	for optionName, optionInput := range optionInputs {
@@ -123,7 +130,7 @@ func (c *CommandDispatcher) parseOptions(options map[string]Option, args []strin
 	}
 	for standardizedOptionName := range standardizedOptionsFromArgs {
 		if !recognizedOptions[standardizedOptionName] {
-			c.unknownOptions = append(c.unknownOptions, standardizedOptionName)
+			return nil, fmt.Errorf("unknown option: %s", standardizedOptionName)
 		}
 	}
 	return optionInputs, nil

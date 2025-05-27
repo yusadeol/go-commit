@@ -1,8 +1,9 @@
 package cli
 
 import (
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"testing"
+
+	"github.com/yusadeol/go-commit/internal/Domain/vo"
 )
 
 type mockCommand struct {
@@ -22,7 +23,13 @@ func (m *mockCommand) GetArguments() []Argument {
 
 func (m *mockCommand) GetOptions() []Option {
 	return []Option{
-		{Name: "first", Flag: "f", Description: "My first option", Default: "default-value"},
+		{
+			Name:          "first",
+			Flag:          "f",
+			Description:   "My first option",
+			AllowedValues: []string{"option-value", "default-value"},
+			Default:       "default-value",
+		},
 	}
 }
 
@@ -38,7 +45,7 @@ func (m *mockCommand) GetName() string {
 
 func TestCommandDispatcher(t *testing.T) {
 	t.Run("dispatches a command with required argument and option", func(t *testing.T) {
-		args := []string{"argumentValue", "--first", "optionValue"}
+		args := []string{"argument-value", "--first", "option-value"}
 		command := newMockCommand()
 		dispatcher := NewCommandDispatcher()
 		dispatcher.Register(command)
@@ -53,17 +60,17 @@ func TestCommandDispatcher(t *testing.T) {
 			t.Fatal("expected command to be executed")
 		}
 		argumentFirst := command.input.Arguments["first"]
-		if argumentFirst.Value != "argumentValue" {
-			t.Errorf("expected argument 'first' to be 'argumentValue', got: %s", argumentFirst.Value)
+		if argumentFirst.Value != "argument-value" {
+			t.Errorf("expected argument 'first' to be 'argument-value', got: %s", argumentFirst.Value)
 		}
 		optionFirst := command.input.Options["first"]
-		if optionFirst.Value != "optionValue" {
-			t.Errorf("expected option 'first' to be 'optionValue', got: %s", optionFirst.Value)
+		if optionFirst.Value != "option-value" {
+			t.Errorf("expected option 'first' to be 'option-value', got: %s", optionFirst.Value)
 		}
 	})
 
 	t.Run("returns error when required argument is missing", func(t *testing.T) {
-		args := []string{"--first", "optionValue"}
+		args := []string{"--first", "option-value"}
 		command := newMockCommand()
 		dispatcher := NewCommandDispatcher()
 		dispatcher.Register(command)
@@ -74,7 +81,7 @@ func TestCommandDispatcher(t *testing.T) {
 		if output.ExitCode != vo.ExitCodeInvalidUsage {
 			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
 		}
-		expectedMessage := "Missing required argument(s): [first]"
+		expectedMessage := "missing required argument: first"
 		gotMessage := output.Message.Plain()
 		if gotMessage != expectedMessage {
 			t.Errorf("expected message %q, got: %q", expectedMessage, gotMessage)
@@ -93,7 +100,7 @@ func TestCommandDispatcher(t *testing.T) {
 	})
 
 	t.Run("uses default option value when option is omitted", func(t *testing.T) {
-		args := []string{"argumentValue"}
+		args := []string{"argument-value"}
 		command := newMockCommand()
 		dispatcher := NewCommandDispatcher()
 		dispatcher.Register(command)
@@ -111,7 +118,21 @@ func TestCommandDispatcher(t *testing.T) {
 	})
 
 	t.Run("returns error on unknown flag", func(t *testing.T) {
-		args := []string{"argumentValue", "--unknown", "oops"}
+		args := []string{"argument-value", "--unknown", "oops"}
+		command := newMockCommand()
+		dispatcher := NewCommandDispatcher()
+		dispatcher.Register(command)
+		output, err := dispatcher.Dispatch("mock", args)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if output.ExitCode != vo.ExitCodeInvalidUsage {
+			t.Fatalf("expected ExitCodeInvalidUsage, got: %v", output.ExitCode)
+		}
+	})
+
+	t.Run("returns error on not allowed option value", func(t *testing.T) {
+		args := []string{"--first", "not-allowed"}
 		command := newMockCommand()
 		dispatcher := NewCommandDispatcher()
 		dispatcher.Register(command)

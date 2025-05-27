@@ -14,10 +14,11 @@ type Argument struct {
 }
 
 type Option struct {
-	Name        string
-	Flag        string
-	Description string
-	Default     string
+	Name          string
+	Flag          string
+	Description   string
+	AllowedValues []string
+	Default       string
 }
 
 type CommandInput struct {
