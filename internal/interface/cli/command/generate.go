@@ -2,9 +2,12 @@ package command
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/application/usecase"
@@ -13,12 +16,11 @@ import (
 )
 
 type Generate struct {
-	configuration            *vo.Configuration
 	aiDefaultProviderFactory ai.ProviderFactory
 }
 
-func NewGenerate(configuration *vo.Configuration, aiDefaultProviderFactory ai.ProviderFactory) *Generate {
-	return &Generate{configuration: configuration, aiDefaultProviderFactory: aiDefaultProviderFactory}
+func NewGenerate(aiDefaultProviderFactory ai.ProviderFactory) *Generate {
+	return &Generate{aiDefaultProviderFactory: aiDefaultProviderFactory}
 }
 
 func (g *Generate) GetName() string {
@@ -59,18 +61,22 @@ func (g *Generate) GetOptions() []cli.Option {
 
 func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	result := cli.NewResult()
-	configurationAIProvider, configurationAIProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
+	configuration, err := g.loadConfiguration()
+	if err != nil {
+		return nil, err
+	}
+	configurationAIProvider, configurationAIProviderExists := configuration.AIProviders[input.Options["provider"].Value]
 	if !configurationAIProviderExists {
 		return nil, fmt.Errorf("AI provider %q configuration not found", input.Options["provider"].Value)
 	}
-	configurationLanguage, configurationLanguageExists := g.configuration.Languages[input.Options["language"].Value]
+	configurationLanguage, configurationLanguageExists := configuration.Languages[input.Options["language"].Value]
 	if !configurationLanguageExists {
 		return nil, fmt.Errorf("language %q configuration not found", input.Options["language"].Value)
 	}
 	diff := input.Arguments["diff"].Value
 	if diff == "" {
 		var err error
-		diff, err = g.GetGitDiff()
+		diff, err = g.getGitDiff()
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +92,7 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 		return nil, err
 	}
 	if input.Options["commit"].Value == "true" {
-		err = g.CommitChanges(output.Commit)
+		err = g.commitChanges(output.Commit)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +105,25 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	return result, nil
 }
 
-func (g *Generate) GetGitDiff() (string, error) {
+func (g *Generate) loadConfiguration() (*vo.Configuration, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+	configurationPath := filepath.Join(homeDir, ".config", "commit.json")
+	data, err := os.ReadFile(configurationPath)
+	if err != nil {
+		return nil, err
+	}
+	var configuration vo.Configuration
+	err = json.Unmarshal(data, &configuration)
+	if err != nil {
+		return nil, err
+	}
+	return &configuration, nil
+}
+
+func (g *Generate) getGitDiff() (string, error) {
 	var out bytes.Buffer
 	var outErr bytes.Buffer
 	cmd := exec.Command("git", "diff", "--staged")
@@ -119,7 +143,7 @@ func (g *Generate) GetGitDiff() (string, error) {
 	return diff, nil
 }
 
-func (g *Generate) CommitChanges(commit string) error {
+func (g *Generate) commitChanges(commit string) error {
 	var out bytes.Buffer
 	var outErr bytes.Buffer
 	cmd := exec.Command("git", "commit", "-m", commit)
