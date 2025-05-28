@@ -13,6 +13,7 @@ import (
 func main() {
 	args := os.Args[1:]
 	commandsToRegister := []cli.Command{
+		command.NewInit(),
 		command.NewGenerate(ai.NewDefaultProviderFactory()),
 	}
 	app := cli.NewApplication(commandsToRegister)
