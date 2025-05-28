@@ -5,12 +5,14 @@ import (
 )
 
 var markupToANSI = map[string]string{
-	"<info>":     "\033[32m",
+	"<info>":     "\033[36m",
 	"</info>":    "\033[0m",
 	"<error>":    "\033[31m",
 	"</error>":   "\033[0m",
 	"<comment>":  "\033[33m",
 	"</comment>": "\033[0m",
+	"<success>":  "\033[32m",
+	"</success>": "\033[0m",
 }
 
 type MarkupText struct {
@@ -26,7 +28,7 @@ func NewColoredMultilineText(lines []string) *MarkupText {
 	return &MarkupText{text: joined}
 }
 
-func (m MarkupText) ToANSI() string {
+func (m *MarkupText) ToANSI() string {
 	out := m.text
 	for tag, ansi := range markupToANSI {
 		out = strings.ReplaceAll(out, tag, ansi)
@@ -34,7 +36,7 @@ func (m MarkupText) ToANSI() string {
 	return out
 }
 
-func (m MarkupText) Plain() string {
+func (m *MarkupText) Plain() string {
 	out := m.text
 	for tag := range markupToANSI {
 		out = strings.ReplaceAll(out, tag, "")
