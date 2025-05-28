@@ -8,5 +8,5 @@ type Result struct {
 }
 
 func NewResult() *Result {
-	return &Result{ExitCode: vo.ExitCodeSuccess}
+	return &Result{ExitCode: vo.ExitCodeSuccess, Message: vo.NewMarkupText("")}
 }
