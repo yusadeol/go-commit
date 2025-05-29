@@ -36,7 +36,7 @@ func (m *MarkupText) ToANSI() string {
 	return out
 }
 
-func (m *MarkupText) Plain() string {
+func (m *MarkupText) StripMarkup() string {
 	out := m.text
 	for tag := range markupToANSI {
 		out = strings.ReplaceAll(out, tag, "")

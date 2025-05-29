@@ -81,8 +81,8 @@ func TestGenerate(t *testing.T) {
 			t.Fatalf("unexpected exit code: %v", result.ExitCode)
 		}
 		expected := "feat: rename function and update greeting message"
-		if !strings.Contains(result.Message.Plain(), expected) {
-			t.Fatalf("expected message to contain %q, got: %q", expected, result.Message.Plain())
+		if !strings.Contains(result.Message.StripMarkup(), expected) {
+			t.Fatalf("expected message to contain %q, got: %q", expected, result.Message.StripMarkup())
 		}
 	})
 }
