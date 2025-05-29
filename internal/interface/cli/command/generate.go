@@ -17,10 +17,11 @@ import (
 
 type Generate struct {
 	aiDefaultProviderFactory ai.ProviderFactory
+	configurationDirPath     string
 }
 
-func NewGenerate(aiDefaultProviderFactory ai.ProviderFactory) *Generate {
-	return &Generate{aiDefaultProviderFactory: aiDefaultProviderFactory}
+func NewGenerate(aiDefaultProviderFactory ai.ProviderFactory, configurationDirPath string) *Generate {
+	return &Generate{aiDefaultProviderFactory: aiDefaultProviderFactory, configurationDirPath: configurationDirPath}
 }
 
 func (g *Generate) GetName() string {
@@ -106,12 +107,8 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 }
 
 func (g *Generate) loadConfiguration() (*vo.Configuration, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	configurationPath := filepath.Join(homeDir, ".config", "commit.json")
-	data, err := os.ReadFile(configurationPath)
+	configurationFilePath := filepath.Join(g.configurationDirPath, "commit.json")
+	data, err := os.ReadFile(configurationFilePath)
 	if err != nil {
 		return nil, err
 	}

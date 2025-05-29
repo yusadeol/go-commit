@@ -2,18 +2,18 @@ package command
 
 import (
 	"errors"
-	"os"
-	"path/filepath"
 
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/application/usecase"
 	"github.com/yusadeol/go-commit/internal/interface/cli"
 )
 
-type Init struct{}
+type Init struct {
+	configurationDirPath string
+}
 
-func NewInit() *Init {
-	return &Init{}
+func NewInit(configurationDirPath string) *Init {
+	return &Init{configurationDirPath: configurationDirPath}
 }
 
 func (g *Init) GetName() string {
@@ -30,14 +30,9 @@ func (g *Init) GetOptions() []cli.Option {
 
 func (g *Init) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	result := cli.NewResult()
-	homeDirPath, err := os.UserHomeDir()
-	if err != nil {
-		return nil, err
-	}
-	configurationDirPath := filepath.Join(homeDirPath, ".config")
 	createConfigurationFile := usecase.NewCreateConfigurationFile()
-	err = createConfigurationFile.Execute(&usecase.CreateConfigurationFileInput{
-		ConfigurationDirPath: configurationDirPath,
+	err := createConfigurationFile.Execute(&usecase.CreateConfigurationFileInput{
+		ConfigurationDirPath: g.configurationDirPath,
 	})
 	if errors.Is(err, usecase.ErrConfigurationAlreadyExists) {
 		result.ExitCode = vo.ExitCodeError
