@@ -2,12 +2,9 @@ package command
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/yusadeol/go-commit/internal/Domain/vo"
 	"github.com/yusadeol/go-commit/internal/application/usecase"
@@ -16,12 +13,12 @@ import (
 )
 
 type Generate struct {
+	configuration            *vo.Configuration
 	aiDefaultProviderFactory ai.ProviderFactory
-	configurationDirPath     string
 }
 
-func NewGenerate(aiDefaultProviderFactory ai.ProviderFactory, configurationDirPath string) *Generate {
-	return &Generate{aiDefaultProviderFactory: aiDefaultProviderFactory, configurationDirPath: configurationDirPath}
+func NewGenerate(configuration *vo.Configuration, aiDefaultProviderFactory ai.ProviderFactory) *Generate {
+	return &Generate{configuration: configuration, aiDefaultProviderFactory: aiDefaultProviderFactory}
 }
 
 func (g *Generate) GetName() string {
@@ -62,15 +59,11 @@ func (g *Generate) GetOptions() []cli.Option {
 
 func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	result := cli.NewResult()
-	configuration, err := g.loadConfiguration()
-	if err != nil {
-		return nil, err
-	}
-	configurationAIProvider, configurationAIProviderExists := configuration.AIProviders[input.Options["provider"].Value]
+	configurationAIProvider, configurationAIProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
 	if !configurationAIProviderExists {
 		return nil, fmt.Errorf("AI provider %q configuration not found", input.Options["provider"].Value)
 	}
-	configurationLanguage, configurationLanguageExists := configuration.Languages[input.Options["language"].Value]
+	configurationLanguage, configurationLanguageExists := g.configuration.Languages[input.Options["language"].Value]
 	if !configurationLanguageExists {
 		return nil, fmt.Errorf("language %q configuration not found", input.Options["language"].Value)
 	}
@@ -104,20 +97,6 @@ func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
 	}
 	result.Message = vo.NewColoredMultilineText(message)
 	return result, nil
-}
-
-func (g *Generate) loadConfiguration() (*vo.Configuration, error) {
-	configurationFilePath := filepath.Join(g.configurationDirPath, "commit.json")
-	data, err := os.ReadFile(configurationFilePath)
-	if err != nil {
-		return nil, err
-	}
-	var configuration vo.Configuration
-	err = json.Unmarshal(data, &configuration)
-	if err != nil {
-		return nil, err
-	}
-	return &configuration, nil
 }
 
 func (g *Generate) getGitDiff() (string, error) {

@@ -56,11 +56,10 @@ func TestGenerate(t *testing.T) {
 					ID:           "mock",
 					APIKey:       "fake-api-key",
 					DefaultModel: "mock-model",
-					Enabled:      true,
 				},
 			},
 			Languages: map[string]vo.Language{
-				"en_US": {ID: "en_US", DisplayName: "English (US)", Enabled: true},
+				"en_US": {ID: "en_US", DisplayName: "English (US)"},
 			},
 		}
 		generate := NewGenerate(&mockConfiguration, &MockDefaultProviderFactory{})

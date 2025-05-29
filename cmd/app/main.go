@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,9 +22,16 @@ func main() {
 		)
 	}
 	configurationDirPath := filepath.Join(homeDirPath, ".config")
+	configuration, err := loadConfiguration(configurationDirPath)
+	if err != nil {
+		exitWithMessage(
+			vo.ExitCodeError,
+			vo.NewMarkupText(fmt.Sprintf("<error>%s</error>", err.Error())),
+		)
+	}
 	commandsToRegister := []cli.Command{
 		command.NewInit(configurationDirPath),
-		command.NewGenerate(ai.NewDefaultProviderFactory(), configurationDirPath),
+		command.NewGenerate(configuration, ai.NewDefaultProviderFactory()),
 	}
 	app := cli.NewApplication(commandsToRegister)
 	output, err := app.Run(args)
@@ -43,4 +51,18 @@ func exitWithMessage(exitCode vo.ExitCode, message *vo.MarkupText) {
 	}
 	fmt.Fprintln(outputChannel, message.ToANSI())
 	os.Exit(int(exitCode))
+}
+
+func loadConfiguration(configurationDirPath string) (*vo.Configuration, error) {
+	configurationFilePath := filepath.Join(configurationDirPath, "commit.json")
+	data, err := os.ReadFile(configurationFilePath)
+	if err != nil {
+		return nil, err
+	}
+	var configuration vo.Configuration
+	err = json.Unmarshal(data, &configuration)
+	if err != nil {
+		return nil, err
+	}
+	return &configuration, nil
 }
