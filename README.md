@@ -1,7 +1,5 @@
 # Commit - Automate your Conventional Commit messages with AI
 
-## Introduction
-
 Commit is a Golang CLI tool that automates the generation of Conventional Commit messages using AI.
 By analyzing your `staged changes`, it generates clear and structured commit messages
 that strictly follow the Conventional Commits standard.
