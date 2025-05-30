@@ -32,20 +32,22 @@ func (g *Generate) GetArguments() []cli.Argument {
 }
 
 func (g *Generate) GetOptions() []cli.Option {
+	aiProviderAllowedValues := g.GetAIProviderAllowedValues()
+	languageAllowedValues := g.GetLanguageAllowedValues()
 	return []cli.Option{
 		{
 			Name:          "provider",
 			Flag:          "p",
 			Description:   "AI Provider",
-			AllowedValues: []string{"openai"},
-			Default:       "openai",
+			AllowedValues: aiProviderAllowedValues,
+			Default:       g.configuration.DefaultAIProvider,
 		},
 		{
 			Name:          "language",
 			Flag:          "l",
 			Description:   "Language",
-			AllowedValues: []string{"en_US", "pt_BR", "es_ES"},
-			Default:       "en_US",
+			AllowedValues: languageAllowedValues,
+			Default:       g.configuration.DefaultLanguage,
 		},
 		{
 			Name:          "commit",
@@ -55,6 +57,22 @@ func (g *Generate) GetOptions() []cli.Option {
 			Default:       "true",
 		},
 	}
+}
+
+func (g *Generate) GetAIProviderAllowedValues() []string {
+	allowedValues := make([]string, 0, len(g.configuration.AIProviders))
+	for aiProvider := range g.configuration.AIProviders {
+		allowedValues = append(allowedValues, aiProvider)
+	}
+	return allowedValues
+}
+
+func (g *Generate) GetLanguageAllowedValues() []string {
+	allowedValues := make([]string, 0, len(g.configuration.Languages))
+	for language := range g.configuration.Languages {
+		allowedValues = append(allowedValues, language)
+	}
+	return allowedValues
 }
 
 func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
