@@ -32,14 +32,13 @@ func (g *Generate) GetArguments() []cli.Argument {
 }
 
 func (g *Generate) GetOptions() []cli.Option {
-	aiProviderAllowedValues := g.GetAIProviderAllowedValues()
 	languageAllowedValues := g.GetLanguageAllowedValues()
 	return []cli.Option{
 		{
 			Name:          "provider",
 			Flag:          "p",
 			Description:   "AI Provider",
-			AllowedValues: aiProviderAllowedValues,
+			AllowedValues: []string{"openai"},
 			Default:       g.configuration.DefaultAIProvider,
 		},
 		{
@@ -57,14 +56,6 @@ func (g *Generate) GetOptions() []cli.Option {
 			Default:       "true",
 		},
 	}
-}
-
-func (g *Generate) GetAIProviderAllowedValues() []string {
-	allowedValues := make([]string, 0, len(g.configuration.AIProviders))
-	for aiProvider := range g.configuration.AIProviders {
-		allowedValues = append(allowedValues, aiProvider)
-	}
-	return allowedValues
 }
 
 func (g *Generate) GetLanguageAllowedValues() []string {
