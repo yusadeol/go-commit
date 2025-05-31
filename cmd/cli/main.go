@@ -6,10 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
-	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
-	"github.com/yusadeol/go-commit/internal/interface/cli"
-	"github.com/yusadeol/go-commit/internal/interface/cli/command"
+	"github.com/yusadeol/go-commit/internal/adapter/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli/command"
+
+	"github.com/yusadeol/go-commit/internal/domain/vo"
+	"github.com/yusadeol/go-commit/internal/infra/service/ai"
 )
 
 func main() {
@@ -49,7 +50,7 @@ func exitWithMessage(exitCode vo.ExitCode, message *vo.MarkupText) {
 	if exitCode != vo.ExitCodeSuccess {
 		outputChannel = os.Stderr
 	}
-	fmt.Fprintln(outputChannel, message.ToANSI())
+	_, _ = fmt.Fprintln(outputChannel, message.ToANSI())
 	os.Exit(int(exitCode))
 }
 

@@ -3,7 +3,7 @@ package cli
 import (
 	"testing"
 
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
+	"github.com/yusadeol/go-commit/internal/domain/vo"
 )
 
 type mockCommand struct {

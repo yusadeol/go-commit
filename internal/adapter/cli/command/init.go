@@ -3,9 +3,9 @@ package command
 import (
 	"errors"
 
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
-	"github.com/yusadeol/go-commit/internal/application/usecase"
-	"github.com/yusadeol/go-commit/internal/interface/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli"
+	"github.com/yusadeol/go-commit/internal/app/usecase"
+	"github.com/yusadeol/go-commit/internal/domain/vo"
 )
 
 type Init struct {

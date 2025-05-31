@@ -1,6 +1,6 @@
 package cli
 
-import "github.com/yusadeol/go-commit/internal/Domain/vo"
+import "github.com/yusadeol/go-commit/internal/domain/vo"
 
 type Application struct {
 	commandDispatcher *CommandDispatcher

@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
+	"github.com/yusadeol/go-commit/internal/domain/vo"
 )
 
 var ErrConfigurationAlreadyExists = errors.New("configuration already exists")

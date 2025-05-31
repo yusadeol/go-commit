@@ -3,8 +3,8 @@ package usecase
 import (
 	"fmt"
 
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
-	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
+	"github.com/yusadeol/go-commit/internal/domain/vo"
+	"github.com/yusadeol/go-commit/internal/infra/service/ai"
 )
 
 type Generate struct{}

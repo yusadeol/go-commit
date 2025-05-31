@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/yusadeol/go-commit/internal/Domain/vo"
-	"github.com/yusadeol/go-commit/internal/application/usecase"
-	"github.com/yusadeol/go-commit/internal/infrastructure/service/ai"
-	"github.com/yusadeol/go-commit/internal/interface/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli"
+
+	"github.com/yusadeol/go-commit/internal/app/usecase"
+	"github.com/yusadeol/go-commit/internal/domain/vo"
+	"github.com/yusadeol/go-commit/internal/infra/service/ai"
 )
 
 type Generate struct {

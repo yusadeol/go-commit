@@ -17,7 +17,10 @@ func NewOpenAI(apiKey string) *OpenAI {
 }
 
 func (o *OpenAI) Ask(input *ProviderInput) (*ProviderOutput, error) {
-	requestBody, _ := json.Marshal(input)
+	requestBody, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
 	payload := bytes.NewBuffer(requestBody)
 	request, err := http.NewRequest(http.MethodPost, "https://api.openai.com/v1/responses", payload)
 	if err != nil {
@@ -30,7 +33,9 @@ func (o *OpenAI) Ask(input *ProviderInput) (*ProviderOutput, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
+	defer func() {
+		_ = response.Body.Close()
+	}()
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err

@@ -6,14 +6,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yusadeol/go-commit/internal/interface/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli"
 )
 
 func TestInit(t *testing.T) {
 	t.Run("should be able to create the configuration file", func(t *testing.T) {
 		tempDir := t.TempDir()
 		configurationDirPath := filepath.Join(tempDir, ".config")
-		os.Mkdir(configurationDirPath, 0755)
+		err := os.Mkdir(configurationDirPath, 0755)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		init := NewInit(configurationDirPath)
 		result, err := init.Execute(&cli.CommandInput{})
 		if err != nil {
@@ -28,13 +31,19 @@ func TestInit(t *testing.T) {
 	t.Run("should return error when the configuration file already exists", func(t *testing.T) {
 		tempDir := t.TempDir()
 		configurationDirPath := filepath.Join(tempDir, ".config")
-		os.Mkdir(configurationDirPath, 0755)
+		err := os.Mkdir(configurationDirPath, 0755)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		configurationFilePath := filepath.Join(configurationDirPath, "commit.json")
 		file, err := os.Create(configurationFilePath)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		file.Close()
+		err = file.Close()
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 		init := NewInit(configurationDirPath)
 		result, err := init.Execute(&cli.CommandInput{})
 		if err != nil {
