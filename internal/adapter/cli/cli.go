@@ -2,19 +2,19 @@ package cli
 
 import "github.com/yusadeol/go-commit/internal/domain/vo"
 
-type Application struct {
+type CLI struct {
 	commandDispatcher *CommandDispatcher
 }
 
-func NewApplication(commandsToRegister []Command) *Application {
+func New(commandsToRegister []Command) *CLI {
 	commandDispatcher := NewCommandDispatcher()
 	for _, commandToRegister := range commandsToRegister {
 		commandDispatcher.Register(commandToRegister)
 	}
-	return &Application{commandDispatcher: commandDispatcher}
+	return &CLI{commandDispatcher: commandDispatcher}
 }
 
-func (a Application) Run(args []string) (*Result, error) {
+func (a CLI) Run(args []string) (*Result, error) {
 	if len(args) == 0 {
 		return &Result{
 			ExitCode: vo.ExitCodeError,

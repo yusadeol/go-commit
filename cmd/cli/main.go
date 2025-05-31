@@ -34,7 +34,7 @@ func main() {
 		command.NewInit(configurationDirPath),
 		command.NewGenerate(configuration, ai.NewDefaultProviderFactory()),
 	}
-	app := cli.NewApplication(commandsToRegister)
+	app := cli.New(commandsToRegister)
 	output, err := app.Run(args)
 	if err != nil {
 		exitWithMessage(
