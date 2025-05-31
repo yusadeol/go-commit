@@ -17,14 +17,13 @@ import (
 
 func main() {
 	args := os.Args[1:]
-	homeDirPath, err := os.UserHomeDir()
+	configurationDirPath, err := getConfigurationFilePath()
 	if err != nil {
 		exitWithMessage(
 			vo.ExitCodeError,
 			vo.NewMarkupText(fmt.Sprintf("<error>%s</error>", err.Error())),
 		)
 	}
-	configurationDirPath := filepath.Join(homeDirPath, ".config")
 	configuration, err := loadConfiguration(configurationDirPath)
 	if err != nil {
 		exitWithMessage(
@@ -45,6 +44,14 @@ func main() {
 		)
 	}
 	exitWithMessage(output.ExitCode, output.Message)
+}
+
+func getConfigurationFilePath() (string, error) {
+	homeDirPath, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(homeDirPath, ".config"), nil
 }
 
 func exitWithMessage(exitCode vo.ExitCode, message *vo.MarkupText) {
