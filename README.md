@@ -6,11 +6,9 @@ that strictly follow the Conventional Commits standard.
 
 ## Official Documentation
 
-##### Install using Go:
+##### Download Binary:
 
-```shell
-go install github.com/ysocode/commit@latest
-```
+To download the latest version of the CLI, go to the Releases page and download the appropriate binary for your system.
 
 ##### Initialize Configuration
 

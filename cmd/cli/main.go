@@ -32,6 +32,7 @@ func main() {
 		)
 	}
 	commandsToRegister := []dispatcher.Command{
+		command.NewVersion("v1.0.1"),
 		command.NewInit(configurationDirPath),
 		command.NewGenerate(configuration, ai.NewDefaultProviderFactory()),
 	}
