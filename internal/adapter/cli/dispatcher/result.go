@@ -1,4 +1,4 @@
-package cli
+package dispatcher
 
 import "github.com/yusadeol/go-commit/internal/domain/vo"
 

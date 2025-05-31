@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yusadeol/go-commit/internal/adapter/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli/dispatcher"
 
 	"github.com/yusadeol/go-commit/internal/domain/vo"
 	"github.com/yusadeol/go-commit/internal/infra/service/ai"
@@ -64,14 +64,14 @@ func TestGenerate(t *testing.T) {
 			},
 		}
 		generate := NewGenerate(&mockConfiguration, &MockDefaultProviderFactory{})
-		result, err := generate.Execute(&cli.CommandInput{
-			Arguments: map[string]cli.ArgumentInput{
-				"diff": {Value: mockDiff, Meta: cli.Argument{Name: "diff", Description: "Git diff", Required: false}},
+		result, err := generate.Execute(&dispatcher.CommandInput{
+			Arguments: map[string]dispatcher.ArgumentInput{
+				"diff": {Value: mockDiff, Meta: dispatcher.Argument{Name: "diff", Description: "Git diff", Required: false}},
 			},
-			Options: map[string]cli.OptionInput{
-				"provider": {Value: "mock", Meta: cli.Option{Name: "provider", Flag: "p", Description: "AI Provider", Default: "mock"}},
-				"language": {Value: "en_US", Meta: cli.Option{Name: "language", Flag: "l", Description: "Language", Default: "en_US"}},
-				"commit":   {Value: "false", Meta: cli.Option{Name: "commit", Flag: "c", Description: "Commit", Default: "true"}},
+			Options: map[string]dispatcher.OptionInput{
+				"provider": {Value: "mock", Meta: dispatcher.Option{Name: "provider", Flag: "p", Description: "AI Provider", Default: "mock"}},
+				"language": {Value: "en_US", Meta: dispatcher.Option{Name: "language", Flag: "l", Description: "Language", Default: "en_US"}},
+				"commit":   {Value: "false", Meta: dispatcher.Option{Name: "commit", Flag: "c", Description: "Commit", Default: "true"}},
 			},
 		})
 		if err != nil {

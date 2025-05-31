@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/yusadeol/go-commit/internal/adapter/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli/dispatcher"
 
 	"github.com/yusadeol/go-commit/internal/app/usecase"
 	"github.com/yusadeol/go-commit/internal/domain/vo"
@@ -26,15 +26,15 @@ func (g *Generate) GetName() string {
 	return "generate"
 }
 
-func (g *Generate) GetArguments() []cli.Argument {
-	return []cli.Argument{
+func (g *Generate) GetArguments() []dispatcher.Argument {
+	return []dispatcher.Argument{
 		{Name: "diff", Description: "Git diff", Required: false},
 	}
 }
 
-func (g *Generate) GetOptions() []cli.Option {
+func (g *Generate) GetOptions() []dispatcher.Option {
 	languageAllowedValues := g.GetLanguageAllowedValues()
-	return []cli.Option{
+	return []dispatcher.Option{
 		{
 			Name:          "provider",
 			Flag:          "p",
@@ -67,8 +67,8 @@ func (g *Generate) GetLanguageAllowedValues() []string {
 	return allowedValues
 }
 
-func (g *Generate) Execute(input *cli.CommandInput) (*cli.Result, error) {
-	result := cli.NewResult()
+func (g *Generate) Execute(input *dispatcher.CommandInput) (*dispatcher.Result, error) {
+	result := dispatcher.NewResult()
 	configurationAIProvider, configurationAIProviderExists := g.configuration.AIProviders[input.Options["provider"].Value]
 	if !configurationAIProviderExists {
 		return nil, fmt.Errorf("AI provider %q configuration not found", input.Options["provider"].Value)

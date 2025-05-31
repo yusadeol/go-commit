@@ -1,4 +1,4 @@
-package cli
+package dispatcher
 
 type Command interface {
 	GetName() string

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yusadeol/go-commit/internal/adapter/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli/dispatcher"
 )
 
 func TestInit(t *testing.T) {
@@ -18,7 +18,7 @@ func TestInit(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		init := NewInit(configurationDirPath)
-		result, err := init.Execute(&cli.CommandInput{})
+		result, err := init.Execute(&dispatcher.CommandInput{})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -45,7 +45,7 @@ func TestInit(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		init := NewInit(configurationDirPath)
-		result, err := init.Execute(&cli.CommandInput{})
+		result, err := init.Execute(&dispatcher.CommandInput{})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}

@@ -3,7 +3,8 @@ package command
 import (
 	"errors"
 
-	"github.com/yusadeol/go-commit/internal/adapter/cli"
+	"github.com/yusadeol/go-commit/internal/adapter/cli/dispatcher"
+
 	"github.com/yusadeol/go-commit/internal/app/usecase"
 	"github.com/yusadeol/go-commit/internal/domain/vo"
 )
@@ -20,16 +21,16 @@ func (g *Init) GetName() string {
 	return "init"
 }
 
-func (g *Init) GetArguments() []cli.Argument {
-	return []cli.Argument{}
+func (g *Init) GetArguments() []dispatcher.Argument {
+	return []dispatcher.Argument{}
 }
 
-func (g *Init) GetOptions() []cli.Option {
-	return []cli.Option{}
+func (g *Init) GetOptions() []dispatcher.Option {
+	return []dispatcher.Option{}
 }
 
-func (g *Init) Execute(input *cli.CommandInput) (*cli.Result, error) {
-	result := cli.NewResult()
+func (g *Init) Execute(input *dispatcher.CommandInput) (*dispatcher.Result, error) {
+	result := dispatcher.NewResult()
 	createConfigurationFile := usecase.NewCreateConfigurationFile()
 	err := createConfigurationFile.Execute(&usecase.CreateConfigurationFileInput{
 		ConfigurationDirPath: g.configurationDirPath,

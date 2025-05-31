@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/yusadeol/go-commit/internal/adapter/cli/dispatcher"
+
 	"github.com/yusadeol/go-commit/internal/adapter/cli"
 	"github.com/yusadeol/go-commit/internal/adapter/cli/command"
 
@@ -30,7 +32,7 @@ func main() {
 			vo.NewMarkupText(fmt.Sprintf("<error>%s</error>", err.Error())),
 		)
 	}
-	commandsToRegister := []cli.Command{
+	commandsToRegister := []dispatcher.Command{
 		command.NewInit(configurationDirPath),
 		command.NewGenerate(configuration, ai.NewDefaultProviderFactory()),
 	}
