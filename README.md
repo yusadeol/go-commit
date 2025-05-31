@@ -8,7 +8,7 @@ that strictly follow the Conventional Commits standard.
 
 ##### Download Binary:
 
-To download the latest version of the CLI, go to the Releases page and download the appropriate binary for your system.
+To download the latest version of the CLI, go to the [Releases](https://github.com/yusadeol/go-commit/releases) page and download the appropriate binary for your system.
 
 ##### Initialize Configuration
 
