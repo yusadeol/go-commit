@@ -27,7 +27,7 @@ type ProviderFactory interface {
 
 type DefaultProviderFactory struct{}
 
-func NewDefaultProviderFactory() ProviderFactory {
+func NewDefaultProviderFactory() *DefaultProviderFactory {
 	return &DefaultProviderFactory{}
 }
 
